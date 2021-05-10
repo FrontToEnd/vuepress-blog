@@ -3,17 +3,22 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "docs:dev": "vuepress dev docs",
-    "docs:build": "vuepress build docs",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "deploy": "bash deploy.sh",
+    "docs:build": "vuepress build docs",
+    "docs:dev": "vuepress dev docs"
   },
   "dependencies": {
-    "core-js": "^3.6.4",
-    "vue": "^2.6.11"
+    "core-js": "^3.9.1",
+    "vue": "^2.6.11",
+    "vuepress-plugin-helper-live2d": "^1.0.2",
+    "vuepress-theme-antdocs": "^1.2.2"
   },
   "devDependencies": {
+    "@fullhuman/postcss-purgecss": "^2.1.0",
+    "@fullhuman/vue-cli-plugin-purgecss": "~2.2.0",
     "@vue/cli-plugin-babel": "~4.3.0",
     "@vue/cli-plugin-eslint": "~4.3.0",
     "@vue/cli-service": "~4.3.0",
