@@ -101,3 +101,13 @@ server {
 
 }
 ```
+
+## 修改前端配置
+
+修改`nginx`配置的同时，前端也需要同步修改。其实很简单，在每一个调用的接口前加上统一的前缀即可，以`axios`为例：
+
+```js
+import axios from 'axios'
+
+axios.defaults.baseURL = '/common-api' // 与nginx保持一直
+```
