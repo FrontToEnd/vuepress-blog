@@ -109,5 +109,5 @@ server {
 ```js
 import axios from 'axios'
 
-axios.defaults.baseURL = '/common-api' // 与nginx保持一直
+axios.defaults.baseURL = '/common-api' // 与nginx保持一致
 ```
