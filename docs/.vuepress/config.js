@@ -39,6 +39,7 @@ module.exports = {
     ]
   ],
   base: '/f2e_standred/',
+  // base: '/',
   themeConfig: {
     logo: '/img/logo.png',
     nav: [{
@@ -115,7 +116,8 @@ module.exports = {
           ]
         },
       ],
-    }
+    },
+    backToTop: true, // 置顶按钮
   },
   chainWebpack (config) {
     config.resolve.alias.set('core-js/library/fn', 'core-js/features'); // fix core-js error
