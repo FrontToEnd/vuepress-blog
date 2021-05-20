@@ -103,7 +103,8 @@ module.exports = {
             'vue3.0',
             'jsPlumb',
             'css_property',
-            'nginx'
+            'nginx',
+            'excel'
           ]
         },
         {
