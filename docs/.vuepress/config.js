@@ -116,6 +116,20 @@ module.exports = {
             'yunxi',
           ]
         },
+        {
+          title: '代码片段',
+          collapsable: false,
+          children: [
+            'code_fragment',
+          ]
+        },
+        {
+          title: '资源收集',
+          collapsable: false,
+          children: [
+            'resource',
+          ]
+        },
       ],
     },
     backToTop: true, // 置顶按钮
