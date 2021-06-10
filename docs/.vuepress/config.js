@@ -59,7 +59,7 @@ module.exports = {
       '/guide/': [
         {
           title: '规范',
-          collapsable: false, // 不可折叠
+          collapsable: true, // 可折叠
           children: [
             'JavaScript',
             'CSS',
@@ -70,7 +70,7 @@ module.exports = {
         },
         {
           title: '优化',
-          collapsable: false,
+          collapsable: true,
           children: [
             'Optimize'
           ]
@@ -79,7 +79,7 @@ module.exports = {
       '/article/': [
         {
           title: '项目优化实践',
-          collapsable: false,
+          collapsable: true,
           children: [
             'vue_optimize_gzip',
             'vue_optimize_webpack',
@@ -91,8 +91,9 @@ module.exports = {
         },
         {
           title: '技术探索',
-          collapsable: false,
+          collapsable: true,
           children: [
+            'zqy_cli',
             'npm',
             'browser_render',
             'browser_userAgent',
@@ -109,7 +110,7 @@ module.exports = {
         },
         {
           title: '技术总结',
-          collapsable: false,
+          collapsable: true,
           children: [
             'fe_train',
             'renderer',
@@ -118,14 +119,14 @@ module.exports = {
         },
         {
           title: '代码片段',
-          collapsable: false,
+          collapsable: true,
           children: [
             'code_fragment',
           ]
         },
         {
           title: '资源收集',
-          collapsable: false,
+          collapsable: true,
           children: [
             'resource',
           ]
