@@ -105,7 +105,8 @@ module.exports = {
             'jsPlumb',
             'css_property',
             'nginx',
-            'excel'
+            'excel',
+            'jest'
           ]
         },
         {
