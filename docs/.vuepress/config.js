@@ -38,8 +38,8 @@ module.exports = {
       }
     ]
   ],
-  // base: '/f2e_standred/',
-  base: '/',
+  base: '/f2e_standred/',
+  // base: '/',
   themeConfig: {
     logo: '/img/logo.png',
     nav: [{
@@ -52,7 +52,7 @@ module.exports = {
       },
       {
         text: '文章',
-        link: '/article/vue_optimize_gzip.html'
+        link: '/article/optimize/vue_optimize_gzip.html'
       },
     ],
     sidebar: {
@@ -81,63 +81,71 @@ module.exports = {
           title: '项目优化实践',
           collapsable: true,
           children: [
-            'vue_optimize_gzip',
-            'vue_optimize_webpack',
-            'vue_optimize_branch',
-            'vue_optimize_standard',
-            'vue_optimize_commit',
-            'tailwindcss',
+            'optimize/vue_optimize_gzip',
+            'optimize/vue_optimize_webpack',
+            'optimize/vue_optimize_branch',
+            'optimize/vue_optimize_standard',
+            'optimize/vue_optimize_commit',
+            'optimize/tailwindcss',
           ]
         },
         {
           title: '技术探索',
           collapsable: true,
           children: [
-            'zqy_cli',
-            'npm',
-            'browser_render',
-            'browser_userAgent',
-            'OSS',
-            'sentry',
-            'wasm',
-            'nvm',
-            'vue3.0',
-            'jsPlumb',
-            'css_property',
-            'nginx',
-            'excel',
-            'jest',
-            'download'
+            'explore/zqy_cli',
+            'explore/npm',
+            'explore/browser_render',
+            'explore/browser_userAgent',
+            'explore/OSS',
+            'explore/sentry',
+            'explore/wasm',
+            'explore/nvm',
+            'explore/jsPlumb',
+            'explore/css_property',
+            'explore/nginx',
+            'explore/excel',
+            'explore/jest',
+            'explore/download'
           ]
         },
         {
           title: '技术总结',
           collapsable: true,
           children: [
-            'fe_train',
-            'renderer',
-            'yunxi',
+            'tech/fe_train',
+            'tech/renderer',
+            'tech/yunxi',
+          ]
+        },
+        {
+          title: 'vue3',
+          collapsable: true,
+          children: [
+            'vue3/vue3.0',
+            'vue3/mitt',
           ]
         },
         {
           title: '代码片段',
           collapsable: true,
           children: [
-            'code_fragment',
+            'code/code_fragment',
           ]
         },
         {
           title: '资源收集',
           collapsable: true,
           children: [
-            'resource',
+            'resource/resource',
           ]
         },
         {
           title: '杂记',
           collapsable: true,
           children: [
-            'OTC',
+            'notes/OTC',
+            'notes/MAC'
           ]
         },
       ],
