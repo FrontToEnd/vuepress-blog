@@ -1,6 +1,7 @@
 # mitt.js
 
 `vue3`从实例中完全移除了 `$on`、`$off` 和 `$once` 方法。意味着vue2里的通讯方式EventBus已经无法在vue3使用。
+
 `Event bus` 模式可以被替换为实现了事件触发器接口的外部库，例如 [mitt](https://github.com/developit/mitt) 或 [tiny-emitter](https://github.com/scottcorgan/tiny-emitter)。
 
 因此，升级vue3就有两种方案：
