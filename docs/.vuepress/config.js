@@ -38,8 +38,8 @@ module.exports = {
       }
     ]
   ],
-  base: '/f2e_standred/',
-  // base: '/',
+  // base: '/f2e_standred/',
+  base: '/',
   themeConfig: {
     logo: '/img/logo.png',
     nav: [{
@@ -106,7 +106,8 @@ module.exports = {
             'css_property',
             'nginx',
             'excel',
-            'jest'
+            'jest',
+            'download'
           ]
         },
         {
@@ -130,6 +131,13 @@ module.exports = {
           collapsable: true,
           children: [
             'resource',
+          ]
+        },
+        {
+          title: '杂记',
+          collapsable: true,
+          children: [
+            'OTC',
           ]
         },
       ],

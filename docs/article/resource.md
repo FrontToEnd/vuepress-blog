@@ -285,3 +285,7 @@
 - 三顿PPT导航：sandunppt.com
   
 - Excel函数表：https://support.office.com/zh-cn/article/excel-%E5%87%BD%E6%95%B0%EF%BC%88%E6%8C%89%E5%AD%97%E6%AF%8D%E9%A1%BA%E5%BA%8F%EF%BC%89-b3944572-255d-4efb-bb96-c6d90033e188
+
+## 投资
+
+- 长牛导航： https://touzitools.com/
