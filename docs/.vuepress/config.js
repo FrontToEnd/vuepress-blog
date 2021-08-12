@@ -131,6 +131,7 @@ module.exports = {
           collapsable: true,
           children: [
             'code/code_fragment',
+            'code/sass'
           ]
         },
         {
