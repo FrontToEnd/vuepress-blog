@@ -116,6 +116,8 @@ module.exports = {
             'tech/fe_train',
             'tech/renderer',
             'tech/yunxi',
+            'tech/design_document',
+            'tech/technology_research',
           ]
         },
         {
