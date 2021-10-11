@@ -121,11 +121,12 @@ module.exports = {
           ]
         },
         {
-          title: 'vue3',
+          title: 'vue相关',
           collapsable: true,
           children: [
             'vue3/vue3.0',
             'vue3/mitt',
+            'vue3/Functional_Components',
           ]
         },
         {
@@ -149,7 +150,8 @@ module.exports = {
           collapsable: true,
           children: [
             'notes/OTC',
-            'notes/MAC'
+            'notes/MAC',
+            'notes/time'
           ]
         },
       ],
