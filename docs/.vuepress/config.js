@@ -87,6 +87,7 @@ module.exports = {
             'optimize/vue_optimize_standard',
             'optimize/vue_optimize_commit',
             'optimize/tailwindcss',
+            'optimize/Performance',
           ]
         },
         {
@@ -106,7 +107,7 @@ module.exports = {
             'explore/nginx',
             'explore/excel',
             'explore/jest',
-            'explore/download'
+            'explore/download',
           ]
         },
         {
@@ -135,7 +136,8 @@ module.exports = {
           children: [
             'code/code_fragment',
             'code/sass',
-            'code/verify_utils'
+            'code/verify_utils',
+            'code/ramda'
           ]
         },
         {

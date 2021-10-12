@@ -511,3 +511,54 @@ select {
 }
 
 ```
+
+## 不定长宽度文字跑马灯来回滚动展示 -- 父容器定宽，子元素不定宽
+
+```html
+<div class="wrap">
+    <span class="one" title="Overflow scorll left to right Overflow">Overflow scorll left to right Overflow</span>
+    <span class="one" title="AAA BBB CCC DDD EEE FFF DDD GGG">AAA BBB CCC DDD EEE FFF DDD GGG</span>
+    <span class="" title="AAA BBB CCC">AAA BBB CCC</span>
+    <span class="one" title="AAA BBB CCC DDD EEE FFF DDD GGG HHH III">AAA BBB CCC DDD EEE FFF DDD GGG HHH III</span>
+</div>
+```
+
+```css
+.wrap {
+    position: relative;
+    width: 200px;
+    height: 100vh;
+    background: #ddd;
+    overflow: hidden;
+}
+
+span {
+    display: inline-block;
+    white-space: nowrap;
+    padding: 5px;
+    line-height: 24px;
+    cursor: pointer;
+}
+
+.one:hover {
+    animation: move 5s infinite alternate linear;
+}
+
+@keyframes move {
+    0% {
+        transform: translate(0, 0);
+    }
+    100% {
+        transform: translate(calc(-100% + 200px), 0);
+    }
+}
+```
+
+核心是使用 `inline-block` 获取实际文本的宽度。这里没有使用 `display: inline` 是因为我们需要让 `p` 元素滚动起来需要用到 `transform`，但是 `transform` 是无法作用在内联元素之上的。
+
+如果我们 `transform: translate(100%, 0)`，其实表示的就是向右移动一个元素本身宽度的距离。
+
+需要滚动的距离 S = 溢出的文本元素的宽度 - 父元素的宽度。
+
+那么我们可以借助 calc 非常容易的拿到我们上述的需要滚动的距离 S -- `transform: translate(calc(-100% + 200px), 0)`。
+
