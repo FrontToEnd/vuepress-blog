@@ -6,7 +6,7 @@ Ramda函数库是我们学习函数式编程的最佳开源项目，该库集成
 
 ## 内部函数
 
-### _curry1
+## _curry1
 
 ```js
 function _curry1(fn) {
@@ -24,7 +24,7 @@ module.exports = _curry1;
 
 该函数是柯里化系列，用来处理fn的参数个数为1时的情况。
 
-### _curry2
+## _curry2
 
 ```js
 function _curry2(fn) {
@@ -49,7 +49,7 @@ module.exports = _curry2;
 
 该函数是柯里化系列，用来处理fn的参数个数为2时的情况。
 
-### _curry3
+## _curry3
 
 ```js
 function _curry3(fn) {
@@ -79,7 +79,7 @@ module.exports = _curry3;
 
 该函数是柯里化系列，用来处理fn的参数个数为3时的情况。
 
-### _concat
+## _concat
 
 ```js
 
@@ -116,7 +116,7 @@ function _concat(set1, set2) {
 module.exports = _concat;
 ```
 
-### _assertPromise
+## _assertPromise
 
 ```js
 function _assertPromise(name, p) {
@@ -130,7 +130,7 @@ module.exports = _assertPromise;
 
 用来判断传入的p是否为`promise`。具体方案是判断`p.then`是否是`function`。
 
-### _isFunction
+## _isFunction
 
 ```js
 function _isFunction(x) {
@@ -143,7 +143,7 @@ module.exports = _isFunction;
 
 用来判断入参是否为函数。从中可以学到不止要判断`[object Function]`，还要判断其他三种情况。
 
-### _toString
+## _toString
 
 ```js
 function _toString(x, seen) {
@@ -204,7 +204,7 @@ module.exports = _toString;
 
 实现定制化的toString方法。
 
-### _aperture
+## _aperture
 
 ```js
 function _aperture(n, list) {
@@ -230,7 +230,7 @@ module.exports = _aperture;
 
 返回一个新列表，列表中的元素为由原列表相邻元素组成的 n 元组。如果 n 大于列表的长度，则返回空列表。
 
-### _isInteger
+## _isInteger
 
 ```js
 module.exports = Number.isInteger || function _isInteger(n) {
@@ -240,7 +240,7 @@ module.exports = Number.isInteger || function _isInteger(n) {
 
 判断给定参数是否为整数。这里采用原生的静态方法`Number.isInteger`进行判断，或者左移0位与原参数进行比较。如果n不为整数，左移0位就不与本身相等。
 
-### _makeFlat
+## _makeFlat
 
 ```js
 function _makeFlat(recursive) {
@@ -281,7 +281,7 @@ module.exports = _makeFlat;
 
 `_makeFlat`是一个helper函数，它根据传入的标志返回一级或完全递归的函数。
 
-### _clone
+## _clone
 
 ```js
 
@@ -311,6 +311,7 @@ function _clone(value, refFrom, refTo, deep) {
     refFrom[idx + 1] = value;
     refTo[idx + 1] = copiedValue;
 
+    // 使用for...in来遍历对象以及原型链上的属性，支持深克隆
     for (var key in value) {
       copiedValue[key] = deep ? _clone(value[key], refFrom, refTo, true) : value[key];
     }
@@ -344,7 +345,7 @@ module.exports = _clone;
 
 ## 可导出函数
 
-### add
+## add
 
 ```js
 
@@ -362,7 +363,7 @@ module.exports = add;
 
 该函数用来两数相加，支持柯里化。
 
-### adjust
+## adjust
 
 ```js
 
@@ -394,7 +395,7 @@ _curry3(function adjust(idx, fn, list) {
 
 将数组中指定索引处的值替换为经函数变换的值。支持柯里化。
 
-### all
+## all
 
 ```js
 
@@ -426,7 +427,7 @@ module.exports = all;
 
 如果列表中的所有元素都满足 predicate，则返回 true；否则，返回 false。
 
-### always
+## always
 
 ```js
 
@@ -447,7 +448,7 @@ module.exports = always;
 
 返回一个返回恒定值的函数。注意，对于非原始值，返回的值是对原始值的引用。
 
-### and
+## and
 
 ```js
 
@@ -465,7 +466,7 @@ module.exports = and;
 
 如果两个参数都是 true，则返回 true；否则返回 false。
 
-### andThen
+## andThen
 
 ```js
 var andThen =
@@ -480,7 +481,7 @@ module.exports = andThen;
 
 将 onSuccess 函数应用于一个 fulfilled Promise 的内部值，并将计算结果放入新的 Promise 中返回。
 
-### any
+## any
 
 ```js
 var any =
@@ -505,7 +506,7 @@ module.exports = any;
 
 只要列表中有一个元素满足 `predicate`，就返回 `true`，否则返回 `false`。该函数与`all`函数相反。
 
-### aperture
+## aperture
 
 ```js
 
@@ -524,7 +525,7 @@ module.exports = aperture;
 
 返回一个新列表，列表中的元素为由原列表相邻元素组成的 n 元组。如果 n 大于列表的长度，则返回空列表。
 
-### append
+## append
 
 ```js
 
@@ -543,7 +544,7 @@ module.exports = append;
 
 在列表末尾拼接一个元素。需要注意`_concat`的第二个参数是`[el]`。
 
-### apply
+## apply
 
 ```js
 
@@ -562,7 +563,7 @@ module.exports = apply;
 
 将函数 `fn` 作用于参数列表 `args`。`apply` 可以将变参函数转换为为定参函数。该函数支持柯里化。
 
-### applyTo
+## applyTo
 
 ```js
 
@@ -580,7 +581,7 @@ module.exports = applyTo;
 
 接受一个值，并将一个函数作用于其上。
 
-### ascend
+## ascend
 
 ```js
 
@@ -606,7 +607,7 @@ module.exports = ascend;
 
 由返回值可与 < 和 > 比较的函数，创建一个升序比较函数。使用柯里化从而方便接受fn，并将返回值传入接受比较函数的函数。
 
-### assoc
+## assoc
 
 ```js
 
@@ -632,7 +633,7 @@ module.exports = assoc;
 
 浅复制对象，然后设置或覆盖对象的指定属性。注意，该函数也会将 `prototype` 属性复制到新的对象中。
 
-### assocPath
+## assocPath
 
 ```js
 
@@ -676,7 +677,7 @@ module.exports = assocPath;
 
 浅复制对象，设置或覆盖即将创建的给定路径所需的节点，并将特定值放在该路径的末端。
 
-### binary
+## binary
 
 ```js
 
@@ -695,7 +696,7 @@ module.exports = binary;
 
 将任意元函数封装为二元函数（只接受2个参数）中。任何额外的参数都不会传递给被封装的函数。
 
-### both
+## both
 
 ```js
 
@@ -725,7 +726,7 @@ module.exports = both;
 
 该函数调用两个函数，并对两函数返回值进行与操作。若第一个函数结果为 `false-y` 值 (false, null, 0 等)，则返回该结果，否则返回第二个函数的结果。
 
-### call
+## call
 
 ```js
 
@@ -743,7 +744,7 @@ module.exports = call;
 
 提取第一个参数作为函数，其余参数作为刚提取的函数的参数，调用该函数并将结果返回。
 
-### chain
+## chain
 
 ```js
 var chain =
@@ -765,7 +766,7 @@ module.exports = chain;
 
 chain 将函数映射到列表中每个元素，并将结果连接起来。如果第二个参数是函数，chain(f, g)(x) 等价于 f(g(x), x)。要弄清楚该函数的源码，还需要深入了解内部函数`_makeFlat`和`map`。其中`_makeFlat`是一个helper函数，它根据传入的标志返回一级或完全递归的函数。这里不进行递归，也就是只会拍平一层。
 
-### map
+## map
 
 ```js
 
@@ -803,7 +804,7 @@ module.exports = map;
 
 接收一个函数和一个 `functor`, 将该函数应用到 `functor` 的每个值上，返回一个具有相同形态的 `functor`。如果要进一步了解`map`方法的全貌，就需要深入到内部函数`_map`中。
 
-### _map
+## _map
 
 ```js
 function _map(fn, functor) {
@@ -822,7 +823,7 @@ function _map(fn, functor) {
 
 内部函数`_map`通过遍历对数组或者类数组每一项应用fn函数，并返回新数组。
 
-### clamp
+## clamp
 
 ```js
 
@@ -846,7 +847,7 @@ module.exports = clamp;
 
 将数字限制在指定的范围内。
 
-### clone
+## clone
 
 ```js
 
@@ -867,3 +868,96 @@ module.exports = clone;
 ```
 
 深复制。其值可能（嵌套）包含 `Array、Object、Number、String、Boolean、Date` 类型的数据。`Function` 通过引用复制。
+
+## comparator
+
+```js
+/**
+* const byAge = R.comparator((a, b) => a.age < b.age);
+* const people = [
+*   { name: 'Emma', age: 70 },
+*   { name: 'Peter', age: 78 },
+*   { name: 'Mikhail', age: 62 },
+* ];
+* const peopleByIncreasingAge = R.sort(byAge, people);
+*   //=> [{ name: 'Mikhail', age: 62 },{ name: 'Emma', age: 70 }, { name: 'Peter', age: 78 }]
+*/
+var comparator =
+_curry1(function comparator(pred) {
+  return function (a, b) {
+
+    // 比较函数， a < b则返回-1， a > b则返回1， 否则返回0
+    return pred(a, b) ? -1 : pred(b, a) ? 1 : 0;
+  };
+});
+
+module.exports = comparator;
+```
+
+由首个参数是否小于第二个参数的判断函数，生成一个比较函数。
+
+## compose
+
+```js
+/**
+ * @symb R.compose(f, g, h)(a, b) = f(g(h(a, b)))
+*/
+function compose() {
+  if (arguments.length === 0) {
+    throw new Error('compose requires at least one argument');
+  }
+
+  // 将参数反转，然后调用pipe，其中pipe是从左往右执行函数，后续继续分析pipe的源码
+  return pipe.apply(this, reverse(arguments));
+}
+
+module.exports = compose;
+```
+
+从右往左执行函数组合（右侧函数的输出作为左侧函数的输入）。最后一个函数可以是任意元函数（参数个数不限），其余函数必须是一元函数。
+
+## concat
+
+```js
+var concat =
+_curry2(function concat(a, b) {
+  if (_isArray(a)) {
+    if (_isArray(b)) {
+
+      // 如果a和b都是数组，则调用数组上的concat
+      return a.concat(b);
+    }
+
+    // 类型不同直接报错
+    throw new TypeError(toString(b) + ' is not an array');
+  }
+
+  if (_isString(a)) {
+    if (_isString(b)) {
+
+      // 如果a和b都是字符串，则直接相加
+      return a + b;
+    }
+
+    // 类型不同直接报错
+    throw new TypeError(toString(b) + ' is not a string');
+  }
+
+  // a的属性存在fantasy-land/concat则调用
+  if (a != null && _isFunction(a['fantasy-land/concat'])) {
+    return a['fantasy-land/concat'](b);
+  }
+
+  // a自身存在concat方法则调用自身方法
+  if (a != null && _isFunction(a.concat)) {
+    return a.concat(b);
+  }
+
+  // 上述分支都不满足，则报错
+  throw new TypeError(toString(a) + ' does not have a method named "concat" or "fantasy-land/concat"');
+});
+
+module.exports = concat;
+```
+
+连接列表或字符串。R.concat 要求两个参数类型相同。若第一个参数自身存在 concat 方法，则调用自身的 concat。
