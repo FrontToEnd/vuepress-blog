@@ -919,6 +919,12 @@ module.exports = compose;
 ## concat
 
 ```js
+
+/**
+*R.concat('ABC', 'DEF'); // 'ABCDEF'
+*R.concat([4, 5, 6], [1, 2, 3]); //=> [4, 5, 6, 1, 2, 3]
+*R.concat([], []); //=> []
+*/
 var concat =
 _curry2(function concat(a, b) {
   if (_isArray(a)) {
@@ -960,4 +966,4 @@ _curry2(function concat(a, b) {
 module.exports = concat;
 ```
 
-连接列表或字符串。R.concat 要求两个参数类型相同。若第一个参数自身存在 concat 方法，则调用自身的 concat。
+连接列表或字符串。`R.concat` 要求两个参数类型相同。若第一个参数自身存在 `concat` 方法，则调用自身的 `concat`。
