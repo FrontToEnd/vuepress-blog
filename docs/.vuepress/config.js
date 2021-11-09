@@ -38,8 +38,8 @@ module.exports = {
       }
     ]
   ],
-  // base: '/f2e_standred/',
-  base: '/',
+  base: '/f2e_standred/',
+  // base: '/',
   themeConfig: {
     logo: '/img/logo.png',
     nav: [{
@@ -107,6 +107,7 @@ module.exports = {
             'explore/nginx',
             'explore/excel',
             'explore/jest',
+            'explore/jest_02',
             'explore/download',
             'explore/JSON',
           ]
