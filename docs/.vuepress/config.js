@@ -147,6 +147,7 @@ module.exports = {
           collapsable: true,
           children: [
             'resource/resource',
+            'resource/2021前端必读',
           ]
         },
         {
