@@ -1,8 +1,8 @@
 const path = require('path');
 const fs = require('fs');
 module.exports = {
-  title: '智器云',
-  description: '智器云大数据前端开发规范',
+  title: "屈鲲的技术博客",
+  description: 'F2Eer，努力成为全干工程师',
   head: [
         ['link', { rel: 'icon', href: '/favicon.ico' }] // 自定义favicon
   ],
@@ -41,7 +41,7 @@ module.exports = {
   // base: '/f2e_standred/',
   base: '/',
   themeConfig: {
-    logo: '/img/logo.png',
+    // logo: '/img/logo.png',
     nav: [{
         text: '首页',
         link: '/'
@@ -139,7 +139,8 @@ module.exports = {
             'code/code_fragment',
             'code/sass',
             'code/verify_utils',
-            'code/ramda'
+            'code/ramda',
+            'code/不规则图形',
           ]
         },
         {

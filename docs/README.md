@@ -15,11 +15,11 @@ preactionBtn:
   ghost: true
   size: large
 features:
-- title: JavaScript
-  details: Airbnb JavaScript 代码规范
-- title: CSS
-  details: 参考百度CSS代码规范
-- title: HTML
-  details: 参考百度HTML代码规范
+- title: 规范
+  details: 前端代码规范
+- title: 文章
+  details: 前端技术总结
+- title: 未完待续
+  details: Todo
 footer: Written by chuck | <a href="http://beian.miit.gov.cn/" target="_blank">苏ICP备2021019868号</a>
 ---
