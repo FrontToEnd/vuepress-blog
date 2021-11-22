@@ -38,8 +38,8 @@ module.exports = {
       }
     ]
   ],
-  base: '/f2e_standred/',
-  // base: '/',
+  // base: '/f2e_standred/',
+  base: '/',
   themeConfig: {
     logo: '/img/logo.png',
     nav: [{
@@ -148,6 +148,7 @@ module.exports = {
           children: [
             'resource/resource',
             'resource/2021前端必读',
+            'resource/web站点',
           ]
         },
         {

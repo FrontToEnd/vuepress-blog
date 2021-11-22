@@ -541,10 +541,127 @@ describe("count", () => {
 
 由代码可以看出，`store`数据的伪造与`router`的第一种方式十分类似。也是通过`vue`实例引用并挂载来实现。这里我们并不关心`mutations`中函数做了哪些操作，我们只要知道元素点击触发了哪个`mutations`函数，通过伪造的函数我们去断言`mutations`**是否被调用**。
 
+## 举个栗子
+
+下面是一个用来包裹的函数式组件：
+
+```vue
+<template functional>
+  <component
+    :is="props.tag"
+    :ref="data.ref"
+    class="container mx-auto"
+    :class="[
+      data.class,
+      data.staticClass,
+    ]"
+    :style="[
+      data.style,
+      data.staticStyle,
+    ]"
+    v-bind="data.attrs"
+    v-on="listeners"
+  >
+    <slot />
+  </component>
+</template>
+
+<script>
+export default {
+  name: 'Container',
+
+  props: {
+    tag: {
+      default: 'div',
+      type: String,
+    },
+  },
+};
+</script>
+
+```
+
+我们看看如何写一个比较合理的单元测试，此处参考了[mijin](https://lecoueyl.github.io/mijin.web/docs/general/getting-started)源码中的单元测试。
+
+```js
+import { enableAutoDestroy, shallowMount } from '@vue/test-utils';
+import Container from './Container.vue';
+
+describe('Container', () => {
+  enableAutoDestroy(afterEach);
+
+  it('has default structure', async () => {
+    const wrapper = shallowMount(Container);
+
+    expect(wrapper.element.tagName).toBe('DIV');
+    expect(wrapper.classes('container')).toBe(true);
+  });
+
+  it('renders default slot content', async () => {
+    const wrapper = shallowMount(Container, {
+      slots: {
+        default: '<span>foobar</span>',
+      },
+    });
+
+    expect(wrapper.find('span').exists()).toBe(true);
+    expect(wrapper.text()).toBe('foobar');
+  });
+
+  it('renders custom root element', async () => {
+    const wrapper = shallowMount(Container, {
+      propsData: {
+        tag: 'section',
+      },
+    });
+
+    expect(wrapper.element.tagName).toBe('SECTION');
+  });
+
+  it('should emit events', async () => {
+    let called = 0;
+    let event = null;
+    const wrapper = shallowMount(Container, {
+      listeners: {
+        blur: (e) => {
+          event = e;
+          called += 1;
+        },
+        click: (e) => {
+          event = e;
+          called += 1;
+        },
+        focus: (e) => {
+          event = e;
+          called += 1;
+        },
+      },
+    });
+
+    expect(called).toBe(0);
+    expect(event).toEqual(null);
+
+    await wrapper.trigger('click');
+    expect(called).toBe(1);
+    expect(event).toBeInstanceOf(MouseEvent);
+
+    await wrapper.element.dispatchEvent(new Event('focus'));
+    expect(called).toBe(2);
+    expect(event).toBeInstanceOf(Event);
+
+    await wrapper.element.dispatchEvent(new Event('blur'));
+    expect(called).toBe(3);
+    expect(event).toBeInstanceOf(Event);
+  });
+});
+```
+
+可以看到，该单元测试着重测试了组件挂载后的默认标签、指定默认插槽后渲染的内容、指定标签后的渲染情况，最后还测试了**派发相关事件**后，是否触发。
+
 ## 总结
 
-本文详细介绍了`jest`断言库的一些基本语法，方便大家快速的掌握常用的方法并加以使用。然后介绍了如何对vue组件进行单元测试，包括`props、data、vue-router、vuex`的设置与伪造。不过不是所以的组件都需要进行单元测试，毕竟单元测试也是需要人力成本的。如果组件满足以下条件，可以考虑引入单元测试：
+本文详细介绍了`jest`断言库的一些基本语法，方便大家快速的掌握常用的方法并加以使用。然后介绍了如何对vue组件进行单元测试，包括`props、data、vue-router、vuex`的设置与伪造。不过不是所有的组件都需要进行单元测试，毕竟单元测试也是需要人力成本的。如果组件满足以下条件，可以考虑引入单元测试：
 
 - 长期稳定的项目迭代，需要保证代码的可维护性和功能稳定；
-- 页面功能相对来说说比较复杂，逻辑较多；
+- 页面功能相对来说比较复杂，逻辑较多；
 - 对于一些复用性很高的组件，可以考虑单元测试；
