@@ -1,10 +1,13 @@
+const guide = require("./config/guide");
+const article = require("./config/article");
+const notes = require("./config/notes");
 const path = require('path');
 const fs = require('fs');
 module.exports = {
-  title: "屈鲲的技术博客",
-  description: 'F2Eer，努力成为全干工程师',
+  title: "chuck",
+  description: 'hi，我是卡卡。一名F2Eer',
   head: [
-        ['link', { rel: 'icon', href: '/favicon.ico' }] // 自定义favicon
+    ['link', { rel: 'icon', href: '/favicon.ico' }] // 自定义favicon
   ],
   markdown: {
     lineNumbers: true
@@ -38,130 +41,47 @@ module.exports = {
       }
     ]
   ],
-  // base: '/f2e_standred/',
   base: '/',
   themeConfig: {
-    // logo: '/img/logo.png',
+    logo: '/img/logo.png',
+    smoothScroll: true, //平滑滚动
+    sidebarDepth: 1,
+    repo: "FrontToEnd/vuepress-blog",
+    docsRepo: "FrontToEnd/vuepress-blog",
+    docsBranch: "main",
+    editLinks: true, // 编辑链接
+    editLinkText: "帮助我改善这个页面", // 链接字段
+    lastUpdated: "最后更新时间", // 最后更新时间
     nav: [{
-        text: '首页',
+        text: '🍧首页',
         link: '/'
       },
       {
-        text: '规范',
-        link: '/guide/JavaScript.html'
+        text: '🏆规范',
+        link: '/guide/'
       },
       {
-        text: '文章',
-        link: '/article/optimize/vue_optimize_gzip.html'
+        text: '📒文章',
+        link: '/article/'
       },
+      {
+        text: '📚笔记',
+        link: '/notes/'
+      },
+      // {
+      //   text: "🌱其他",
+      //   items: [
+      //     {
+      //       text: "git",
+      //       link: "/other/git/",
+      //     },
+      //   ],
+      // },
     ],
     sidebar: {
-      '/guide/': [
-        {
-          title: '规范',
-          collapsable: true, // 可折叠
-          children: [
-            'JavaScript',
-            'CSS',
-            'HTML',
-            'Code',
-            'Vue',
-          ]
-        },
-        {
-          title: '优化',
-          collapsable: true,
-          children: [
-            'Optimize'
-          ]
-        }
-      ],
-      '/article/': [
-        {
-          title: '项目优化实践',
-          collapsable: true,
-          children: [
-            'optimize/vue_optimize_gzip',
-            'optimize/vue_optimize_webpack',
-            'optimize/vue_optimize_branch',
-            'optimize/vue_optimize_standard',
-            'optimize/vue_optimize_commit',
-            'optimize/tailwindcss',
-            'optimize/Performance',
-          ]
-        },
-        {
-          title: '技术探索',
-          collapsable: true,
-          children: [
-            'explore/zqy_cli',
-            'explore/npm',
-            'explore/browser_render',
-            'explore/browser_userAgent',
-            'explore/OSS',
-            'explore/sentry',
-            'explore/wasm',
-            'explore/nvm',
-            'explore/jsPlumb',
-            'explore/css_property',
-            'explore/nginx',
-            'explore/excel',
-            'explore/jest',
-            'explore/jest_02',
-            'explore/download',
-            'explore/JSON',
-          ]
-        },
-        {
-          title: '技术总结',
-          collapsable: true,
-          children: [
-            'tech/fe_train',
-            'tech/renderer',
-            'tech/yunxi',
-            'tech/design_document',
-            'tech/technology_research',
-          ]
-        },
-        {
-          title: 'vue相关',
-          collapsable: true,
-          children: [
-            'vue3/vue3.0',
-            'vue3/mitt',
-            'vue3/Functional_Components',
-          ]
-        },
-        {
-          title: '代码片段',
-          collapsable: true,
-          children: [
-            'code/code_fragment',
-            'code/sass',
-            'code/verify_utils',
-            'code/ramda',
-            'code/不规则图形',
-          ]
-        },
-        {
-          title: '资源收集',
-          collapsable: true,
-          children: [
-            'resource/resource',
-            'resource/2021前端必读',
-            'resource/web站点',
-          ]
-        },
-        {
-          title: '杂记',
-          collapsable: true,
-          children: [
-            'notes/OTC',
-            'notes/MAC',
-            'notes/time'
-          ]
-        },
-      ],
+      '/guide/': guide.guide,
+      '/article/': article.article,
+      '/notes/': notes.notes
     },
     backToTop: true, // 置顶按钮
   },
