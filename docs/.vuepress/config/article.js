@@ -8,6 +8,7 @@ const article = [
         'optimize/vue_optimize_branch',
         'optimize/vue_optimize_standard',
         'optimize/vue_optimize_commit',
+        'optimize/vue_optimize_debounce',
         'optimize/tailwindcss',
         'optimize/Performance',
         ]
