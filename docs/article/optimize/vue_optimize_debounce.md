@@ -98,8 +98,6 @@ export default {
 
 ## 总结
 
-The main approach is to create the debounced or throttled callback as a property of the instance in the created() hook:
-
 最佳实践就是在`created`的生命周期内，创建防抖或节流的回调，并作为实例属性。
 
 ```js

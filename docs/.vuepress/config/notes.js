@@ -1,5 +1,5 @@
 const notes = [
-    // ['/notes/', '笔记'],
+    ['/notes/阅读Mijin有感', '阅读Mijin有感'],
 ];
 
 module.exports = {
