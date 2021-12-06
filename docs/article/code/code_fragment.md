@@ -562,3 +562,63 @@ span {
 
 那么我们可以借助 calc 非常容易的拿到我们上述的需要滚动的距离 S -- `transform: translate(calc(-100% + 200px), 0)`。
 
+## 滤镜实现内凹的平滑圆角
+
+```html
+<div class="g-container">
+    <div class="g-content">
+        <div class="g-filter"></div>
+    </div>
+</div>
+
+<div class="g-container">
+    <div class="g-content">
+        <div class="g-filter"></div>
+    </div>
+</div>
+```
+
+```scss
+html, body {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    
+    background-color: white;
+}
+
+.g-container {
+    position: relative;
+    width: 300px;
+    height: 100px;
+    margin: auto;
+    
+    .g-content {
+        height: 100px;
+        filter: contrast(20);
+        background-color: white;
+        overflow: hidden;
+        
+        .g-filter {
+            filter: blur(10px);
+            height: 100px;
+            background: radial-gradient(circle at 50% -10px, transparent 0, transparent 29px, #000 40px, #000);
+        }
+    }
+}
+
+.g-container:nth-child(2) {
+    &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        z-index: 1;
+        background: radial-gradient(circle at 50% -10px, transparent 0, transparent 60px, #000 60px, #000 0);
+    }
+}
+```
+
+具体效果查看[这里](https://codepen.io/Chokcoco/pen/JjroBPo)
