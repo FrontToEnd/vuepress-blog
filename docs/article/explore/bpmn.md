@@ -44,7 +44,9 @@ BPMN 2.0（Business Process Model and Notation）
 
 ## BPMN绘制
 
-了解了**BPMN**基本对象，那怎么样才能进行可视化操作呢？这里要用到[BPMN.js](https://bpmn.io/toolkit/bpmn-js/)，可以很方便的将`bpmn-js`集成进vue项目，核心用法如下：
+了解了**BPMN**基本对象，那怎么样才能进行可视化操作呢？这里要用到[BPMN.js](https://bpmn.io/toolkit/bpmn-js/)，可以很方便的将`bpmn-js`集成进vue项目，可以访问[官方demo页](https://demo.bpmn.io/new)进行体验。
+
+核心用法如下：
 
 ```js
 import BpmnViewer from 'bpmn-js';

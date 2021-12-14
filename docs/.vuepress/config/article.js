@@ -50,7 +50,12 @@ const article = [
   {
     title: "vue相关",
     collapsable: true,
-    children: ["vue3/vue3.0", "vue3/mitt", "vue3/Functional_Components"],
+    children: [
+      "vue3/vue3.0",
+      "vue3/mitt",
+      "vue3/Functional_Components",
+      "vue3/vite中集成tailwindcss",
+    ],
   },
   {
     title: "代码片段",
