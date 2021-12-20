@@ -1,4 +1,4 @@
-# vite入如何引入Tailwindcss
+# vite如何引入Tailwindcss
 
 ## 简介
 
