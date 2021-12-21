@@ -11,6 +11,7 @@ const article = [
       "optimize/vue_optimize_debounce",
       "optimize/tailwindcss",
       "optimize/Performance",
+      "optimize/前端性能优化原理与实践",
     ],
   },
   {
