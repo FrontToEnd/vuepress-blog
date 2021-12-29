@@ -17,7 +17,7 @@ const article = [
   {
     title: "技术体系",
     collapsable: true,
-    children: ["system/css硬件加速"],
+    children: ["system/css硬件加速", "system/取消请求"],
   },
   {
     title: "技术探索",
