@@ -40,6 +40,7 @@ const article = [
       "explore/download",
       "explore/JSON",
       "explore/bpmn",
+      "explore/relative_time",
     ],
   },
   {
