@@ -935,7 +935,7 @@ type result = Record<K, { id: number }>
 
 `Record` 允许从 `Union` 类型中创建新类型，`Union` 类型中的值用作新类型的属性。
 
-学习类型工具，可以阅读https://github.com/piotrwitek/utility-types和https://github.com/type-challenges/type-challenges
+学习类型工具，可以阅读[utility-types](https://github.com/piotrwitek/utility-types)和[type-challenges](https://github.com/type-challenges/type-challenges)
 
 ## 编译器
 
