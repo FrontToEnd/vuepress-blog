@@ -1,21 +1,24 @@
 const guide = require("./config/guide");
 const article = require("./config/article");
 const notes = require("./config/notes");
-const path = require('path');
-const fs = require('fs');
+const algorithm = require("./config/algorithm");
+const path = require("path");
+const fs = require("fs");
 module.exports = {
   title: "chuck",
-  description: 'hi，我是卡卡。一名F2Eer',
+  description: "hi，我是chuck。一名F2Eer",
   head: [
-    ['link', { rel: 'icon', href: '/favicon.ico' }] // 自定义favicon
+    ["link", { rel: "icon", href: "/favicon.ico" }], // 自定义favicon
   ],
   markdown: {
-    lineNumbers: true
+    lineNumbers: true,
   },
-  theme: 'antdocs', // https://antdocs.seeyoz.cn/
+  theme: "antdocs", // https://antdocs.seeyoz.cn/
   plugins: [
     [
-      'vuepress-plugin-helper-live2d', { // https://github.com/JoeyBling/vuepress-plugin-helper-live2d
+      "vuepress-plugin-helper-live2d",
+      {
+        // https://github.com/JoeyBling/vuepress-plugin-helper-live2d
         // 是否开启控制台日志打印(default: false)
         log: false,
         live2d: {
@@ -23,7 +26,7 @@ module.exports = {
           enable: true,
           // 模型名称(default: hibiki)>>>取值请参考：
           // https://github.com/JoeyBling/hexo-theme-yilia-plus/wiki/live2d%E6%A8%A1%E5%9E%8B%E5%8C%85%E5%B1%95%E7%A4%BA
-          model: 'hibiki',
+          model: "hibiki",
           display: {
             position: "right", // 显示位置：left/right(default: 'right')
             width: 135, // 模型的长度(default: 135)
@@ -32,18 +35,18 @@ module.exports = {
             vOffset: 0, //  垂直偏移(default: 0)
           },
           mobile: {
-            show: false // 是否在移动设备上显示(default: false)
+            show: false, // 是否在移动设备上显示(default: false)
           },
           react: {
-            opacity: 0.8 // 模型透明度(default: 0.8)
-          }
-        }
-      }
-    ]
+            opacity: 0.8, // 模型透明度(default: 0.8)
+          },
+        },
+      },
+    ],
   ],
-  base: '/',
+  base: "/",
   themeConfig: {
-    logo: '/img/logo.png',
+    logo: "/img/logo.png",
     smoothScroll: true, //平滑滚动
     sidebarDepth: 1,
     repo: "FrontToEnd/vuepress-blog",
@@ -52,21 +55,26 @@ module.exports = {
     editLinks: true, // 编辑链接
     editLinkText: "帮助我改善这个页面", // 链接字段
     lastUpdated: "最后更新时间", // 最后更新时间
-    nav: [{
-        text: '🍧首页',
-        link: '/'
+    nav: [
+      {
+        text: "🍧首页",
+        link: "/",
       },
       {
-        text: '🏆规范',
-        link: '/guide/'
+        text: "🏆规范",
+        link: "/guide/",
       },
       {
-        text: '📒文章',
-        link: '/article/'
+        text: "📒文章",
+        link: "/article/",
       },
       {
-        text: '📚笔记',
-        link: '/notes/'
+        text: "📚笔记",
+        link: "/notes/",
+      },
+      {
+        text: "🌲算法",
+        link: "/algorithm/",
       },
       // {
       //   text: "🌱其他",
@@ -79,13 +87,14 @@ module.exports = {
       // },
     ],
     sidebar: {
-      '/guide/': guide.guide,
-      '/article/': article.article,
-      '/notes/': notes.notes
+      "/guide/": guide.guide,
+      "/article/": article.article,
+      "/notes/": notes.notes,
+      "/algorithm/": algorithm.algorithm,
     },
     backToTop: true, // 置顶按钮
   },
-  chainWebpack (config) {
-    config.resolve.alias.set('core-js/library/fn', 'core-js/features'); // fix core-js error
-  }
-}
+  chainWebpack(config) {
+    config.resolve.alias.set("core-js/library/fn", "core-js/features"); // fix core-js error
+  },
+};
