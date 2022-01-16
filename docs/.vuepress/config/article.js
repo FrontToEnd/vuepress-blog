@@ -32,7 +32,6 @@ const article = [
       "explore/wasm",
       "explore/nvm",
       "explore/jsPlumb",
-      "explore/css_property",
       "explore/nginx",
       "explore/excel",
       "explore/jest",
@@ -68,7 +67,7 @@ const article = [
   {
     title: "CSS",
     collapsable: true,
-    children: ["css/filter和backdrop-filter"],
+    children: ["css/filter和backdrop-filter", "css/css_property"],
   },
   {
     title: "代码片段",
