@@ -9,4 +9,4 @@ npm run docs:build
 # 进入生成的文件夹
 cd docs/.vuepress
 
-scp -r $(pwd)/dist root@39.100.44.156:/usr/share/nginx/html
+scp -r $(pwd)/dist root@124.223.72.169:/usr/share/nginx/html
