@@ -7,7 +7,12 @@ const algorithm = [
   {
     title: "剑指Offer题解",
     collapsable: true,
-    children: ["offer/剑指Offer题解-Day1"],
+    children: [
+      "offer/剑指Offer题解-Day1",
+      "offer/剑指Offer题解-Day2",
+      "offer/剑指Offer题解-Day3",
+      "offer/剑指Offer题解-Day4",
+    ],
   },
 ];
 
