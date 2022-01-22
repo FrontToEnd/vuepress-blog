@@ -2,7 +2,12 @@ const algorithm = [
   {
     title: "算法笔记",
     collapsable: true,
-    children: ["algorithm/算法笔记第01周"],
+    children: ["weekly/算法笔记第01周"],
+  },
+  {
+    title: "剑指Offer题解",
+    collapsable: true,
+    children: ["offer/剑指Offer题解-Day1"],
   },
 ];
 
