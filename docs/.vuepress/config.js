@@ -13,7 +13,7 @@ module.exports = {
   markdown: {
     lineNumbers: true,
   },
-  theme: "antdocs", // https://antdocs.seeyoz.cn/
+  theme: "antdocs", // https://antdocs.pages.dev/
   plugins: [
     [
       "vuepress-plugin-helper-live2d",
@@ -75,6 +75,19 @@ module.exports = {
       {
         text: "🌲算法",
         link: "/algorithm/",
+      },
+      {
+        text: "🌈联系",
+        items: [
+          {
+            text: "Github",
+            link: "https://github.com/FrontToEnd",
+          },
+          {
+            text: "掘金",
+            link: "https://juejin.cn/user/2911162519273294/posts",
+          },
+        ],
       },
       // {
       //   text: "🌱其他",
