@@ -23,7 +23,7 @@ jobs:
       - name: install Node.js
         uses: actions/setup-node@v2.5.0
         with:
-          node-version: "14.X"
+          node-version: "16.X"
       - name: install dep
         run: npm install
       - name: build app
@@ -35,5 +35,5 @@ jobs:
           username: ${{ secrets.REMOTE_USER }}
           password: ${{ secrets.REMOTE_PASS }}
           port: 22
-          source: "docs/.vuepress/dist"
+          source: "docs/.vuepress/dist/"
           target: ${{ secrets.REMOTE_TARGET }}
