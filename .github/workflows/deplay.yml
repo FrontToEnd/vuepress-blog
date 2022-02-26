@@ -27,7 +27,7 @@ jobs:
       - name: install dep
         run: npm install
       - name: build app
-        run: npm run build
+        run: npm run docs:build
       - name: copy file via ssh password
         uses: appleboy/scp-action@master
         with:
