@@ -41,6 +41,7 @@ const article = [
       "explore/bpmn",
       "explore/原生开发探索",
       "explore/relative_time",
+      "explore/deploy",
     ],
   },
   {
