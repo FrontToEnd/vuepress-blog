@@ -967,3 +967,499 @@ module.exports = concat;
 ```
 
 连接列表或字符串。`R.concat` 要求两个参数类型相同。若第一个参数自身存在 `concat` 方法，则调用自身的 `concat`。
+
+## contains
+
+```js
+/**
+ *  R.contains(3, [1, 2, 3]); //=> true
+ *  R.contains(4, [1, 2, 3]); //=> false
+ */
+
+var contains =
+/*#__PURE__*/
+_curry2(_includes);
+
+module.exports = contains;
+
+var _indexOf =
+/*#__PURE__*/
+require("./_indexOf");
+
+function _includes(a, list) {
+  return _indexOf(list, a, 0) >= 0;
+}
+
+module.exports = _includes;
+```
+
+内部函数`_indexOf`是为了兼容低版本浏览器，而自己实现了索引查找。
+
+## dec
+
+```js
+/**
+ *  R.dec(42); //=> 41
+ */
+var dec =
+/*#__PURE__*/
+add(-1);
+module.exports = dec;
+```
+
+简单明了，为了减1。
+
+## defaultTo
+
+```js
+/**
+ * const defaultTo42 = R.defaultTo(42);
+ * defaultTo42(null);  //=> 42
+ * defaultTo42(undefined);  //=> 42
+ * defaultTo42(false);  //=> false
+ */
+
+var defaultTo =
+/*#__PURE__*/
+_curry2(function defaultTo(d, v) {
+  return v == null || v !== v ? d : v;
+});
+
+module.exports = defaultTo;
+```
+
+通过柯里化缓存默认值。如果第二个参数不是 `null`、`undefined` 或 `NaN`，则返回第二个参数，否则返回第一个参数（默认值）。
+
+## descend
+
+```js
+/**
+ *  const byAge = R.descend(R.prop('age'));
+ * const people = [{ name: 'Emma', age: 70 },{ name: 'Peter', age: 78 },{ name: 'Mikhail', age: 62 },];
+ * const peopleByOldestFirst = R.sort(byAge, people);         //=> [{ name: 'Peter', age: 78 }, { name: 'Emma', age: 70 }, { name: 'Mikhail', age: 62 }]
+ */
+var descend =
+/*#__PURE__*/
+_curry3(function descend(fn, a, b) {
+  var aa = fn(a);
+  var bb = fn(b);
+  return aa > bb ? -1 : aa < bb ? 1 : 0; // 降序比较
+});
+
+module.exports = descend;
+```
+
+由返回值可与 `<` 和 `>` 比较的函数，创建一个降序比较函数。可以看出，该函数接受三个参数，第一个参数也是一个函数，用来执行第二和第三个参数。并按照降序比较的逻辑进行返回-1、1、0。
+后两个参数通过排序方法`sort`来传递。
+
+## difference
+
+```js
+/**
+ * R.difference([1,2,3,4], [7,6,5,4,3]); //=> [1,2]
+ * R.difference([7,6,5,4,3], [1,2,3,4]); //=> [7,6,5]
+ */
+var difference =
+/*#__PURE__*/
+_curry2(function difference(first, second) {
+  var out = []; // 初始化结果数组
+  var idx = 0; // 初始化数组索引
+  var firstLen = first.length; // 缓存数组长度
+  var secondLen = second.length;
+  var toFilterOut = new _Set(); // 声明集合存放不重复元素
+
+  for (var i = 0; i < secondLen; i += 1) { // 将数组2存放到集合中
+    toFilterOut.add(second[i]);
+  }
+
+  while (idx < firstLen) { // 循环数组1
+    if (toFilterOut.add(first[idx])) { // 如果数组1的元素成功添加到集合中，意味着当前元素不存在于数组2
+      out[out.length] = first[idx]; // 将数组1的当前元素放入结果数组末尾
+    }
+
+    idx += 1; // 索引累加，判断数组1的下个元素
+  }
+
+  return out; // 返回结果数组
+});
+
+module.exports = difference;
+```
+
+求差集。求第一个列表中，未包含在第二个列表中的任一元素的集合。对象和数组比较数值相等，而非引用相等。可以看出，通过数组1的元素能否成功添加到包含数组2元素的集合，来求出差集。
+
+## dissoc
+
+```js
+/**
+ * R.dissoc('b', {a: 1, b: 2, c: 3}); //=> {a: 1, c: 3}
+ */
+var dissoc =
+/*#__PURE__*/
+_curry2(function dissoc(prop, obj) {
+  var result = {};
+
+  for (var p in obj) {
+    result[p] = obj[p]; // 对象的拷贝
+  }
+
+  delete result[prop]; // 删除指定属性
+  return result; // 返回结果对象
+});
+
+module.exports = dissoc;
+```
+
+删除对象中指定 `prop` 属性。
+
+## dissocPath
+
+```js
+/**
+ * R.dissocPath(['a', 'b', 'c'], {a: {b: {c: 42}}}); //=> {a: {b: {}}}
+ */
+var dissocPath =
+/*#__PURE__*/
+_curry2(function dissocPath(path, obj) {
+  switch (path.length) {
+    case 0: // 路径是空数组，直接返回对象
+      return obj;
+
+    case 1: // 路径是一项，则直接删除当前项即可，底层调用数组的splice或对象的delete
+      return _isInteger(path[0]) && _isArray(obj) ? remove(path[0], 1, obj) : dissoc(path[0], obj);
+
+    default: // 超过一项需要递归来处理
+      var head = path[0]; // 获取第一项
+      var tail = Array.prototype.slice.call(path, 1); // 获取剩余项
+
+      if (obj[head] == null) { // 如果第一项是null或undefined，直接返回不处理
+        return obj;
+      } else if (_isInteger(head) && _isArray(obj)) { // 逐步更新第一项所对象的值，分为数组和对象两种情况
+        return update(head, dissocPath(tail, obj[head]), obj);
+      } else {
+        return assoc(head, dissocPath(tail, obj[head]), obj);
+      }
+
+  }
+});
+
+module.exports = dissocPath;
+```
+
+浅复制对象，删除返回对象中指定路径上的属性。在`remove`和`dissoc`、以及`update`和`assoc`中对对象进行了浅复制操作。
+
+## divide
+
+```js
+/**
+ * const reciprocal = R.divide(1);
+ * reciprocal(4);   //=> 0.25
+ */
+var divide =
+/*#__PURE__*/
+_curry2(function divide(a, b) {
+  return a / b;
+});
+
+module.exports = divide;
+```
+
+两数相除。等价于 a / b。
+
+## drop
+
+```js
+var drop =
+/*#__PURE__*/
+_curry2(
+/*#__PURE__*/
+_dispatchable(['drop'], _xdrop, function drop(n, xs) {
+  return slice(Math.max(0, n), Infinity, xs); // 截取数组的第n项到最后一项
+}));
+
+module.exports = drop;
+```
+删除给定 `list`，`string` 或者 `transducer/transformer`（或者具有 `drop` 方法的对象）的前 `n` 个元素。这里使用了数组的`slice`方法，丢弃前n个元素其实就是对数组执行`slice(Math.max(0, n), Infinity)`
+
+## dropLastWhile
+
+```js
+/**
+ *  R.dropLastWhile(x => x !== 'd' , 'Ramda'); //=> 'Ramd'
+ */
+function dropLastWhile(pred, xs) {
+  var idx = xs.length - 1; // 初始化数组末尾索引，字符串同理
+
+  while (idx >= 0 && pred(xs[idx])) { // 只要满足条件，就不断往前遍历，直到遇到第一个falsy值。
+    idx -= 1;
+  }
+
+  return slice(0, idx + 1, xs); // 截取[0, idx]为新数组并返回
+}
+
+module.exports = dropLastWhile;
+```
+
+对 `list` 从后向前一直删除满足 `predicate` 的尾部元素，直到遇到第一个 `falsy` 值，此时停止删除操作。
+
+## dropRepeatsWith
+
+```js
+function dropRepeatsWith(pred, list) {
+  var result = [];
+  var idx = 1;
+  var len = list.length;
+
+  if (len !== 0) {
+    result[0] = list[0]; // 将list首项元素放入结果数组中，方便后续判断
+
+    while (idx < len) { // 循环list
+      if (!pred(last(result), list[idx])) { // 如果结果数组的最后一项和list当前去项不相等
+        result[result.length] = list[idx]; // 则放入结果数组末尾
+      }
+
+      idx += 1; // 遍历list下一项
+    }
+  }
+
+  return result;
+}
+
+var dropRepeats = dropRepeatsWith(equals);
+
+module.exports = dropRepeats;
+
+```
+
+返回一个没有连续重复元素的 `list`。通过 `R.equals` 函数进行相等性判断。可以看出底层是使用`dropRepeatsWith`来实现。核心逻辑是通过比较结果数组的最后一项是否与list的当前元素是否相等，来决定这个元素是不是连续重复的。
+
+## dropWhile
+
+```js
+/**
+ * R.dropWhile(x => x !== 'd' , 'Ramda'); //=> 'da'
+ */
+function dropWhile(pred, xs) {
+  var idx = 0;
+  var len = xs.length;
+
+  while (idx < len && pred(xs[idx])) {
+    idx += 1;
+  }
+
+  return slice(idx, Infinity, xs);
+}
+
+module.exports = dropWhile;
+```
+
+对 `list` 从前向后删除满足 `predicate` 的头部元素，直到遇到第一个 `falsy` 值。与`dropLastWhile`类似，只不过这是从前往后进行删除。
+
+## empty
+
+```js
+/**
+ *  R.empty([1, 2, 3]);     //=> []
+ * R.empty('unicorns');    //=> ''
+ * R.empty({x: 1, y: 2});  //=> {}
+ */
+function empty(x) {
+  return _isArray(x) ? [] : _isString(x) ? '' : _isObject(x) ? {} : _isArguments(x) ? function () {
+    return arguments;
+  }() : void 0 // else
+  ;
+};
+```
+
+根据传入参数的类型返回其对应的空值。Ramda 定义了各类型的空值如下：`Array ([])，Object ({})，String ('')，和 Arguments`。简化了一些内部属性的判断。其实就是通过三元运算符加上判断类型的函数，以此返回相应的空值。如果都不是，则返回`undefined`。
+
+## eqBy
+
+```js
+/**
+ * R.eqBy(Math.abs, 5, -5); //=> true
+ */
+var eqBy =
+/*#__PURE__*/
+_curry3(function eqBy(f, x, y) {
+  return equals(f(x), f(y));
+});
+
+module.exports = eqBy;
+```
+
+接受一个函数和两个值，通过传入函数对两个值进行相等性判断。如果两个值的计算结果相等，则返回 `true` ；否则返回 `false` 。内部调用`equals`函数来判断传入函数执行两个值的结果。
+
+## eqProps
+
+```js
+var eqProps =
+/*#__PURE__*/
+_curry3(function eqProps(prop, obj1, obj2) {
+  return equals(obj1[prop], obj2[prop]);
+});
+
+module.exports = eqProps;
+```
+
+判断两个对象指定的属性值是否相等。通过 `R.equals` 函数进行相等性判断。可用作柯里化的 `predicate` 。`eqProps`同理，也是调用`equals`函数来判断。
+
+## F
+
+```js
+/**
+ * R.F(); //=> false
+ */
+var F = function () {
+  return false;
+};
+
+module.exports = F;
+```
+
+恒定返回 `false` 的函数。忽略所有的输入参数。
+
+## filter
+
+```js
+/**
+ *  const isEven = n => n % 2 === 0;
+ * R.filter(isEven, [1, 2, 3, 4]); //=> [2, 4]
+ * R.filter(isEven, {a: 1, b: 2, c: 3, d: 4}); //=> {b: 2, d: 4}
+ */
+var filter = function (pred, filterable) {
+  return _isObject(filterable) ? _reduce(function (acc, key) {
+    if (pred(filterable[key])) {
+      acc[key] = filterable[key];
+    }
+
+    return acc;
+  }, {}, keys(filterable)) : // else
+  _filter(pred, filterable);
+}
+
+module.exports = filter;
+```
+
+使用 `predicate` 遍历传入的 `Filterable`，返回满足 `predicate` 的所有元素的新的 `Filterable`。第二个参数自身存在 `filter` 方法，则调用自身的 `filter` 方法。这里只看不存在`filter`的处理方式。
+
+分为对象和数组两种处理方式。如果是对象，那么使用内部函数`_reduce`，就像处理数组一样，将符合条件的属性放到新对象中。如果是数组，则调用内部函数`_filter`。实现如下：
+
+```js
+function _filter(fn, list) {
+  var idx = 0;
+  var len = list.length;
+  var result = [];
+
+  while (idx < len) { // 遍历list，如果满足条件则放入新数组
+    if (fn(list[idx])) {
+      result[result.length] = list[idx];
+    }
+
+    idx += 1;
+  }
+
+  return result;
+}
+
+module.exports = _filter;
+```
+
+## find
+
+```js
+/**
+ * const xs = [{a: 1}, {a: 2}, {a: 3}];
+ * R.find(R.propEq('a', 2))(xs); //=> {a: 2}
+ */
+var find = function find(fn, list) {
+  var idx = 0;
+  var len = list.length;
+
+  while (idx < len) {
+    if (fn(list[idx])) { // 如果找到第一个符合条件的元素，则直接返回
+      return list[idx];
+    }
+
+    idx += 1;
+  }
+}
+
+module.exports = find;
+```
+
+查找并返回 `list` 中首个满足 `predicate` 的元素；如果未找到满足条件的元素，则返回 `undefined` 。若第二个参数自身存在 `find` 方法，则调用自身的 `find` 方法。这里重点看内部`find`的实现方式。核心就是循环`list`，找到第一个符合条件的元素，并返回。
+
+## findIndex
+
+```js
+var findIndex = function findIndex(fn, list) {
+  var idx = 0;
+  var len = list.length;
+
+  while (idx < len) {
+    if (fn(list[idx])) { // 如果找到第一个符合条件的元素，则直接返回当前索引
+      return idx;
+    }
+
+    idx += 1;
+  }
+
+  return -1; // 找不到则返回-1
+}
+
+module.exports = findIndex;
+```
+
+查找并返回 `list` 中首个满足 `predicate` 的元素的索引；如果未找到满足条件的元素，则返回 -1 。
+
+## flatten
+
+```js
+/**
+ *  R.flatten([1, 2, [3, 4], 5, [6, [7, 8, [9, [10, 11], 12]]]]);
+ * //=> [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+ */
+var flatten =
+/*#__PURE__*/
+_curry1(
+/*#__PURE__*/
+_makeFlat(true)); // 递归进行数组展开
+
+module.exports = flatten;
+```
+
+获取 `list` 的所有元素（包含所有子数组中的元素），然后由这些元素组成一个新的数组。深度优先。核心是内部函数`_makeFlat`的实现，下面是代码：
+
+```js
+function _makeFlat(recursive) {
+  return function flatt(list) {
+    var value, jlen, j;
+    var result = [];
+    var idx = 0;
+    var ilen = list.length;
+
+    while (idx < ilen) {
+      if (_isArrayLike(list[idx])) {
+        value = recursive ? flatt(list[idx]) : list[idx];
+        j = 0;
+        jlen = value.length;
+
+        while (j < jlen) {
+          result[result.length] = value[j];
+          j += 1;
+        }
+      } else {
+        result[result.length] = list[idx];
+      }
+
+      idx += 1;
+    }
+
+    return result;
+  };
+}
+
+module.exports = _makeFlat;
+```
+注意这里是深度优先。当遇到数组的某一项是数组时，递归调用`flatt`，并将返回值追加到结果数组当中。

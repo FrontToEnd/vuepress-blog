@@ -267,7 +267,7 @@ scp -r $(pwd)/dist root@124.223.xx.xx:/usr/share/nginx/html
 
 ## Github Actions
 
-我们可以借助github提供的工作流达到自动打包并部署的目的。首先在项目根目录下新建文件夹`.github/workflows` ，在文件夹下新建文件`deplay.yml` ，文件名可以随便起一个。内容如下：
+我们可以借助github提供的工作流达到自动打包并部署的目的。首先在项目根目录下新建文件夹`.github/workflows` ，在文件夹下新建文件`deploy.yml` ，文件名可以随便起一个。内容如下：
 
 ```yaml
 # This is a basic workflow to help you get started with Actions
