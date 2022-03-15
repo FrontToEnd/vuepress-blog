@@ -1441,16 +1441,16 @@ function _makeFlat(recursive) {
 
     while (idx < ilen) {
       if (_isArrayLike(list[idx])) {
-        value = recursive ? flatt(list[idx]) : list[idx];
+        value = recursive ? flatt(list[idx]) : list[idx]; // 如果递归则无限展开，否则只展开一层
         j = 0;
         jlen = value.length;
 
         while (j < jlen) {
-          result[result.length] = value[j];
+          result[result.length] = value[j]; // 将处理过的值追加到结果数组末尾
           j += 1;
         }
       } else {
-        result[result.length] = list[idx];
+        result[result.length] = list[idx]; // 当前元素不是数组，则直接追加到结果数组末尾
       }
 
       idx += 1;
@@ -1462,4 +1462,361 @@ function _makeFlat(recursive) {
 
 module.exports = _makeFlat;
 ```
+
 注意这里是深度优先。当遇到数组的某一项是数组时，递归调用`flatt`，并将返回值追加到结果数组当中。
+
+## flip
+
+```js
+/**
+ * const mergeThree = (a, b, c) => [].concat(a, b, c);
+ * mergeThree(1, 2, 3); //=> [1, 2, 3]
+ * R.flip(mergeThree)(1, 2, 3); //=> [2, 1, 3]
+ */
+var flip =
+/*#__PURE__*/
+_curry1(function flip(fn) {
+  return curryN(fn.length, function (a, b) {
+    var args = Array.prototype.slice.call(arguments, 0);
+    args[0] = b;
+    args[1] = a;
+    return fn.apply(this, args);
+  });
+});
+
+module.exports = flip;
+```
+
+交换函数前两个参数的位置。核心逻辑是浅复制形参，然后调换前两个参数的位置。最后将新的参数顺序传入`fn`中并执行。
+
+## forEach
+
+```js
+var forEach =
+/*#__PURE__*/
+_curry2(
+/*#__PURE__*/
+_checkForMethod('forEach', function forEach(fn, list) {
+  var len = list.length;
+  var idx = 0;
+
+  while (idx < len) {
+    fn(list[idx]);
+    idx += 1;
+  }
+
+  return list;
+}));
+
+module.exports = forEach;
+```
+
+遍历 `list`，对 `list` 中的每个元素执行方法 `fn`。还要注意, 不同于 `Array.prototype.forEach`，`Ramda` 的 `forEach` 会将原数组返回。
+诚如官方文档所说，会将原数组进行返回。这样做可以进行函数组合。核心逻辑是，使用`while`遍历`list`，对每个元素执行方法fn。最后返回原数组。若第二个参数自身存在 `forEach` 方法，则调用自身的 `forEach` 方法。
+
+## forEachObjIndexed
+
+```js
+var forEachObjIndexed =
+/*#__PURE__*/
+_curry2(function forEachObjIndexed(fn, obj) {
+  var keyList = keys(obj); // 得到键组成的list
+  var idx = 0;
+
+  while (idx < keyList.length) { // 遍历键list
+    var key = keyList[idx];
+    fn(obj[key], key, obj); // 将(value, key, obj)传入fn并执行
+    idx += 1;
+  }
+
+  return obj;
+});
+
+module.exports = forEachObjIndexed;
+```
+
+遍历 `object`，对 `object` 中的每对 `key` 和 `value` 执行方法 `fn`。由于对象本身不支持迭代，因此使用`Object.keys`得到键组成的`list`。然后遍历`list`依次获得对象中的键值对，然后传入fn中并执行。
+
+## fromPairs
+
+```js
+/**
+ * R.fromPairs([['a', 1], ['b', 2], ['c', 3]]); //=> {a: 1, b: 2, c: 3}
+ */
+var fromPairs =
+/*#__PURE__*/
+_curry1(function fromPairs(pairs) {
+  var result = {};
+  var idx = 0;
+
+  while (idx < pairs.length) { // 遍历键值对
+    result[pairs[idx][0]] = pairs[idx][1]; // 依次将键值对放入结果对象中，相同的键值对，后面的会覆盖前面的
+    idx += 1;
+  }
+
+  return result;
+});
+
+module.exports = fromPairs;
+```
+
+由一系列 “键值对” 创建一个 `object`。如果某个键出现多次，选取最右侧的键值对。
+
+## groupWith
+
+```js
+/**
+ * R.groupWith(R.equals, [0, 1, 1, 2, 3, 5, 8, 13, 21])
+ * //=> [[0], [1, 1], [2], [3], [5], [8], [13], [21]]
+ * R.groupWith((a, b) => a + 1 === b, [0, 1, 1, 2, 3, 5, 8, 13, 21])
+ * //=> [[0, 1], [1, 2, 3], [5], [8], [13], [21]]
+ */
+var groupWith =
+/*#__PURE__*/
+_curry2(function (fn, list) {
+  var res = [];
+  var idx = 0; // list的当前索引，理解为左指针
+  var len = list.length;
+
+  while (idx < len) { // 循环list
+    var nextidx = idx + 1; // 初始化下一个索引，理解为右指针
+
+    while (nextidx < len && fn(list[nextidx - 1], list[nextidx])) { // 索引不越界的同时，比较当前元素和下一个元素
+      nextidx += 1; // 满足条件则索引累加，判断下一个元素与后面元素的关系
+    }
+
+    res.push(list.slice(idx, nextidx)); // 将满足条件的元素截取为新数组并放入结果数组末尾
+    idx = nextidx; // 左指针指向右指针，开始下次循环
+  }
+
+  return res;
+});
+
+module.exports = groupWith;
+```
+
+通过给定的对比函数，将列表按顺序分割成多组子列表。对比函数只比较相邻元素。核心逻辑是利用双指针来确定满足对比函数的一组元素。比较巧妙的是，右指针默认指向当前左指针的下一个元素，而`slice`方法的第二个位置是不包含的。因此从下一个索引比较就避免了不包含的问题。
+
+## gt
+
+```js
+/**
+ * R.gt(2, 1); //=> true
+ */
+var gt =
+/*#__PURE__*/
+_curry2(function gt(a, b) {
+  return a > b; // 使用大于判断
+});
+
+module.exports = gt;
+```
+
+如果首个参数大于第二个参数，返回 `true`；否则返回 `false`。利用柯里化使函数可以分别接受参数。
+
+## gte
+
+```js
+var gte =
+/*#__PURE__*/
+_curry2(function gte(a, b) {
+  return a >= b; // 使用大于等于判断
+});
+
+module.exports = gte;
+```
+
+如果首个参数大于或等于第二个参数，返回 `true`；否则返回 `false`。
+
+## has
+
+```js
+/**
+ * const hasName = R.has('name');
+ * hasName({name: 'alice'});   //=> true
+ */
+var has =
+/*#__PURE__*/
+_curry2(function has(prop, obj) {
+  return hasPath([prop], obj);
+});
+
+module.exports = has;
+```
+
+如果对象自身含有指定的属性，则返回 `true`；否则返回 `false`。内部是通过`hasPath`来实现的。
+
+## hasPath
+
+```js
+/**
+ *  R.hasPath(['a', 'b'], {a: {b: 2}});         // => true
+ */
+var hasPath =
+/*#__PURE__*/
+_curry2(function hasPath(_path, obj) {
+  if (_path.length === 0 || isNil(obj)) {
+    return false;
+  }
+
+  var val = obj;
+  var idx = 0;
+
+  while (idx < _path.length) {
+    if (!isNil(val) && _has(_path[idx], val)) { // 如果当前对象不为空，且指定属性存在于对象中
+      val = val[_path[idx]]; // 缓存指定属性对应的值，下一次循环时判断
+      idx += 1;
+    } else {
+      return false;
+    }
+  }
+
+  return true;
+});
+
+module.exports = hasPath;
+```
+
+检查对象中是否存在指定的路径。只检查对象自身的属性。可以看到，底层又反过来调用`_has`。个人愚见，其实可以直接递归调用`hasPath`，毕竟`_has`就是用`hasPath`实现的。
+
+## hasIn
+
+```js
+var hasIn =
+/*#__PURE__*/
+_curry2(function hasIn(prop, obj) {
+  return prop in obj;
+});
+
+module.exports = hasIn;
+```
+
+如果对象自身或其原型链上含有指定的属性，则返回 `true`；否则返回 `false`。实际上就是使用了`in`运算符进行判断。同时支持了函数柯里化。
+
+## identical
+
+```js
+var identical =
+/*#__PURE__*/
+_curry2(_objectIs);
+
+module.exports = identical;
+```
+
+如果两个参数是完全相同，则返回 `true`，否则返回 `false`。注意：这只是 ES6 `Object.is` 的柯里化版本而已。我们来看下`_objectIs`是如何实现的。
+
+```js
+function _objectIs(a, b) {
+  // SameValue algorithm
+  if (a === b) {
+    // Steps 1-5, 7-10
+    // Steps 6.b-6.e: +0 != -0
+    return a !== 0 || 1 / a === 1 / b; // 0 和 -0 不是完全相同的
+  } else {
+    // Step 6.a: NaN == NaN
+    return a !== a && b !== b; // NaN 和 NaN 是完全相同的
+  }
+}
+
+module.exports = typeof Object.is === 'function' ? Object.is : _objectIs;
+```
+
+可以看出，如果`Object.is`存在则直接调用，否则调用内部函数。内部函数主要处理了恒等符号关于`+0`、`-0`以及`NaN`判断的问题。
+
+## identity
+
+```js
+var identity =
+/*#__PURE__*/
+_curry1(_identity);
+
+module.exports = identity;
+```
+
+将输入值原样返回。适合用作默认或占位函数。内部函数实现很简单，如下：
+
+```js
+function _identity(x) {
+  return x;
+}
+```
+
+## ifElse
+
+```js
+/**
+ * const incCount = R.ifElse(
+ *  R.has('count'),
+ *  R.over(R.lensProp('count'), R.inc),
+ *  R.assoc('count', 1)
+ * );
+ * incCount({});           //=> { count: 1 }
+ * incCount({ count: 1 }); //=> { count: 2 }
+ */
+var ifElse =
+/*#__PURE__*/
+_curry3(function ifElse(condition, onTrue, onFalse) {
+  return curryN(Math.max(condition.length, onTrue.length, onFalse.length), function _ifElse() {
+    return condition.apply(this, arguments) ? onTrue.apply(this, arguments) : onFalse.apply(this, arguments);
+  });
+});
+
+module.exports = ifElse;
+```
+
+根据 `condition predicate` 的返回值调用 `onTrue` 或 `onFalse` 函数。这里进行了柯里化的处理。其余逻辑就是普通的三元运算符加上函数的执行。
+
+## inc
+
+```js
+var inc =
+/*#__PURE__*/
+add(1);
+module.exports = inc;
+```
+
+很简单，函数的作用就是加1。符合原子化的操作。
+
+## includes
+
+```js
+var includes =
+/*#__PURE__*/
+_curry2(_includes);
+
+module.exports = includes;
+```
+
+内部函数`_includes`实现如下：
+
+```js
+var _indexOf =
+/*#__PURE__*/
+require("./_indexOf");
+
+function _includes(a, list) {
+  return _indexOf(list, a, 0) >= 0;
+}
+
+module.exports = _includes;
+```
+
+只要列表中有一个元素等于指定值，则返回 `true`；否则返回 `false`。如果原生支持`indexOf`方法，则使用`indexOf`判断索引值是否大于等于0；否则通过 `R.equals` 函数进行相等性判断。
+
+## indexOf
+
+```js
+/**
+ * R.indexOf(3, [1,2,3,4]); //=> 2
+ * R.indexOf(10, [1,2,3,4]); //=> -1
+ */
+var indexOf =
+/*#__PURE__*/
+_curry2(function indexOf(target, xs) {
+  return typeof xs.indexOf === 'function' && !_isArray(xs) ? xs.indexOf(target) : _indexOf(xs, target, 0);
+});
+
+module.exports = indexOf;
+```
+
+返回给定元素在数组中首次出现时的索引值，如果数组中没有该元素，则返回 -1。
