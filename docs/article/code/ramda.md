@@ -1819,4 +1819,159 @@ _curry2(function indexOf(target, xs) {
 module.exports = indexOf;
 ```
 
-返回给定元素在数组中首次出现时的索引值，如果数组中没有该元素，则返回 -1。
+返回给定元素在数组中首次出现时的索引值，如果数组中没有该元素，则返回 -1。当参数是数组时，走的其实是内部函数`_indexOf`，原因是IE9以下数组没有`indexOf`方法，因此需要自己实现。下面就具体看下实现：
+
+```js
+var equals =
+/*#__PURE__*/
+require("../equals");
+
+function _indexOf(list, a, idx) {
+  var inf, item; // Array.prototype.indexOf doesn't exist below IE9
+
+  if (typeof list.indexOf === 'function') { // list上存在indexOf方法
+    switch (typeof a) {
+      case 'number':
+        if (a === 0) {
+          // manually crawl the list to distinguish between +0 and -0
+          inf = 1 / a; // 使用+Infinity和-Infinity来区分+0和-0
+
+          while (idx < list.length) {
+            item = list[idx];
+
+            if (item === 0 && 1 / item === inf) { // 处理+0和-0的问题，这里认为两者不相等
+              return idx;
+            }
+
+            idx += 1;
+          }
+
+          return -1;
+        } else if (a !== a) { // 使用 a !== a 且 b !== b 来比较NaN
+          // NaN
+          while (idx < list.length) {
+            item = list[idx];
+
+            if (typeof item === 'number' && item !== item) { // 处理NaN和NaN的问题，这里认为两者相等
+              return idx;
+            }
+
+            idx += 1;
+          }
+
+          return -1;
+        } // non-zero numbers can utilise Set
+
+
+        return list.indexOf(a, idx); // 从指定索引开始查找
+      // all these types can utilise Set
+
+      case 'string':
+      case 'boolean':
+      case 'function':
+      case 'undefined':
+        return list.indexOf(a, idx); // 参数为上述四种类型时，正常查找
+
+      case 'object':
+        if (a === null) {
+          // null can utilise Set
+          return list.indexOf(a, idx); // 参数为null时，正常查找
+        }
+
+    }
+  } // anything else not covered above, defer to R.equals
+
+
+  // list上不存在indexOf方法
+  while (idx < list.length) { // 退化为使用R.equals来判断值的相等
+    if (equals(list[idx], a)) {
+      return idx;
+    }
+
+    idx += 1;
+  }
+
+  return -1;
+}
+
+module.exports = _indexOf;
+```
+
+可以看出，优先考虑使用原生的`indexOf`方法，如果没有，则使用`R.equals`进行判断。
+
+## init
+
+```js
+/**
+ * R.init([1, 2, 3]);  //=> [1, 2]
+ * R.init('abc');  //=> 'ab'
+ */
+var init =
+/*#__PURE__*/
+slice(0, -1);
+module.exports = init;
+```
+
+返回 `list` 或 `string` 删除最后一个元素后的部分。本质就是使用`slice`截取掉最后一个元素。
+
+## insert
+
+```js
+/**
+ * R.insert(2, 'x', [1,2,3,4]); //=> [1,2,'x',3,4]
+ */
+var insert =
+/*#__PURE__*/
+_curry3(function insert(idx, elt, list) {
+  idx = idx < list.length && idx >= 0 ? idx : list.length;
+  var result = Array.prototype.slice.call(list, 0);
+  result.splice(idx, 0, elt);
+  return result;
+});
+
+module.exports = insert;
+```
+
+将元素插入到 `list` 指定索引处。注意，该函数是非破坏性的：返回处理后列表的拷贝。函数运行过程中不会破坏任何列表。既然是函数式编程，当然不能修改原数组啦。这里通过`slice`的方式复制了一份数组。如果传入的`idx`在`list`的范围内则不作处理，否则处理为`list`的长度。
+按照MDN的定义，`idx`如果超出了数组的长度，则从数组末尾开始添加内容。如果是负值，则表示从数组末位开始的第几位。但是这里并没有兼容负数的情况。`splice`会修改原数组，因此需要拷贝一份。
+
+## insertAll
+
+```js
+/**
+ *  R.insertAll(2, ['x','y','z'], [1,2,3,4]); //=> [1,2,'x','y','z',3,4]
+ */
+var insertAll =
+/*#__PURE__*/
+_curry3(function insertAll(idx, elts, list) {
+  idx = idx < list.length && idx >= 0 ? idx : list.length;
+  return [].concat(Array.prototype.slice.call(list, 0, idx), elts, Array.prototype.slice.call(list, idx));
+});
+
+module.exports = insertAll;
+```
+
+将元素插入到 `list` 指定索引处。注意，该函数是非破坏性的：返回处理后列表的拷贝。函数运行过程中不会破坏任何列表。有趣的是，跟`insert`不同，这里没有使用`splice`来添加多个值，因为第三个参数是可以添加多个值。这里采用了数组的截取加拼接的方式。首先截取插入部分以前的数组，然后截取插入部分以后的数组，再通过`concat`将三者按照顺序进行拼接并返回。
+上述两个方法需要熟练掌握`slice`和`splice`的使用。
+
+## intersection
+
+```js
+var intersection =
+/*#__PURE__*/
+_curry2(function intersection(list1, list2) {
+  var lookupList, filteredList;
+
+  if (list1.length > list2.length) {
+    lookupList = list1;
+    filteredList = list2;
+  } else {
+    lookupList = list2;
+    filteredList = list1;
+  }
+
+  return uniq(_filter(flip(_includes)(lookupList), filteredList));
+});
+
+module.exports = intersection;
+```
