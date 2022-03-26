@@ -6,7 +6,7 @@ const path = require("path");
 const fs = require("fs");
 module.exports = {
   title: "chuck",
-  description: "hi，我是chuck。一名F2Eer",
+  description: "一枚不知名前端",
   head: [
     ["link", { rel: "icon", href: "/favicon.ico" }], // 自定义favicon
   ],
