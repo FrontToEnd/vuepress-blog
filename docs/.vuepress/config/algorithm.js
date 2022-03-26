@@ -1,5 +1,10 @@
 const algorithm = [
   {
+    title: "算法分类",
+    collapsable: true,
+    children: ["classify/LeetCode高频题目分类列表"],
+  },
+  {
     title: "算法笔记",
     collapsable: true,
     children: ["weekly/算法笔记第01周"],
