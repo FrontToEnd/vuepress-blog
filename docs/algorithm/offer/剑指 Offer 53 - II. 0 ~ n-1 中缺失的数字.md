@@ -1,6 +1,6 @@
 # 剑指 Offer 题解 - Day7
 
-## **剑指 Offer 53 - II. 0 ～ n-1 中缺失的数字**
+## **剑指 Offer 53 - II. 0 ~ n-1 中缺失的数字**
 
 [力扣题目链接](https://leetcode-cn.com/leetbook/read/illustration-of-algorithm/58iqo5/)
 
