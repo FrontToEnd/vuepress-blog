@@ -12,5 +12,5 @@ preactionBtn:
   link: https://github.com/FrontToEnd
   shape: round
   ghost: true
-#footer: Written by chuck | <a href="http://beian.miit.gov.cn/" target="_blank">苏ICP备2021019868号</a>
+footer: Written by chuck | <a href="http://beian.miit.gov.cn/" target="_blank">苏ICP备2022014697号-1</a>
 ---
