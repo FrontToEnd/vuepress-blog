@@ -87,6 +87,14 @@ const article = [
     ],
   },
   {
+    title: "文章翻译",
+    collapsable: true,
+    children: [
+      "translation/如何处理TypeScript中的可选项和Undefined",
+      "translation/使用Vue3 + Vite + Pinia创建SPA",
+    ],
+  },
+  {
     title: "资源收集",
     collapsable: true,
     children: [
