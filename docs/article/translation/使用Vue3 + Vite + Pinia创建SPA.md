@@ -1,3 +1,5 @@
+# 使用Vue3 + Vite + Pinia创建SPA
+
 原文链接：[https://labs.pineview.io/learn-how-to-build-test-and-deploy-a-single-page-app-with-vue-3-vite-and-pinia/](https://labs.pineview.io/learn-how-to-build-test-and-deploy-a-single-page-app-with-vue-3-vite-and-pinia/)
 
 作者：[Andrei Rusu](https://labs.pineview.io/author/andrei/)
