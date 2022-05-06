@@ -3,6 +3,23 @@ home: true
 heroImage: img/logo.png
 heroText: chuck
 tagline: 一枚不知名前端
+meta:
+  - property: og:title
+    content: chuck
+  - property: og:description
+    content: 一枚不知名前端
+  - property: og:image
+    content: https://bookmark.style/preview.png
+  - property: og:url
+    content: https://www.qukun.com.cn/
+  - property: og:stie_name
+    content: chuck
+  - property: og:image:width
+    content: 1200
+  - property: og:image:height
+    content: 900
+  - property: og:image:alt
+    content: preview
 actionBtn:
   text: 🌈 Enter 🌈
   link: /guide/JavaScript.html
