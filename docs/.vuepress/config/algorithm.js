@@ -12,6 +12,7 @@ const algorithm = [
       "weekly/算法笔记第02周",
       "weekly/算法笔记第03周",
       "weekly/算法笔记第04周",
+      "weekly/算法笔记第05周",
     ],
   },
   {
