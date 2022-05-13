@@ -9,7 +9,7 @@ meta:
   - property: og:description
     content: 一枚不知名前端
   - property: og:image
-    content: https://bookmark.style/preview.png
+    content: https://www.qukun.com.cn/img/preview.png
   - property: og:url
     content: https://www.qukun.com.cn/
   - property: og:stie_name
