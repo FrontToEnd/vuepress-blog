@@ -68,7 +68,10 @@ const article = [
   {
     title: "react相关",
     collapsable: true,
-    children: ["react/使用TypeScript创建React应用"],
+    children: [
+      "react/使用TypeScript创建React应用",
+      "react/React技巧之设置具有默认值的可选props",
+    ],
   },
   {
     title: "CSS",
