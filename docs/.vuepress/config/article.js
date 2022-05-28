@@ -71,6 +71,16 @@ const article = [
     children: [
       "react/使用TypeScript创建React应用",
       "react/React技巧之设置具有默认值的可选props",
+      "react/React技巧之将对象作为props传递给组件",
+      "react/React技巧之将函数作为props传递",
+      "react/React技巧之将CSS作为props传递",
+      "react/React技巧之具有空对象初始值的useState",
+      "react/React技巧之将useState作为对象",
+      "react/React技巧之将useState作为对象数组",
+      "react/React技巧之将useState作为字符串数组",
+      "react/React技巧之输入onFocus和onBlur事件",
+      "react/React技巧之设置行内样式",
+      "react/React技巧之select标签设置占位符",
     ],
   },
   {
