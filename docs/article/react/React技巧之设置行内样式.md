@@ -89,7 +89,6 @@ export default App;
 需要注意的是，当在`style`对象上设置样式时，多单词属性诸如`background-color` 需要设置为驼峰样式。`style`属性的值被包装在两对花括号中。
 
 > 行内样式的第一对花括号标志着表达式的开始，第二对花括号是包含样式和值的对象。
->
 
 ### 提取到变量中
 
@@ -133,7 +132,6 @@ export default App;
 三元运算符与`if/else`语法非常相似。
 
 > 问号前的部分会被计算，如果它返回一个真值(`truthy`)，运算符会返回冒号前的值，否则会返回冒号后的值。
->
 
 示例中的三元运算符检查字符串`hi`的`length`属性是否等于`2` ，如果等于，则返回字符串`violet`作为`backgroundColor`属性的值；否则返回字符串`mediumblue`作为`backgroundColor`属性的值。
 
@@ -167,13 +165,12 @@ export default App;
 在设置样式时，我们使用模板字面量来连接字符串和变量。示例中`div`元素的`width`属性被设置为`150px`。
 
 > 请注意，字符串是用反引号``括起来的，而不是单引号。
->
 
 美元符号标志和花括号语法允许我们使用占位符来求值。
 
 ### 包装器组件
 
-React中一个常用的模式是提取父组件，使用预定义的样式来渲染`children` ****prop。
+React中一个常用的模式是提取父组件，使用预定义的样式来渲染`children` prop。
 
 ```jsx
 function BoldText({children}) {
@@ -193,7 +190,7 @@ const App = () => {
 export default App;
 ```
 
-这是一个非常简单的示例，但是`BoldText`组件在一个元素上设置了一些样式，并渲染了它的`children` ****prop。
+这是一个非常简单的示例，但是`BoldText`组件在一个元素上设置了一些样式，并渲染了它的`children`prop。
 
 此方法通常用于定义具有通用样式的包装器组件。
 
@@ -236,6 +233,5 @@ export default App;
 ```
 
 > 当在React中导入全局`css`文件时，最佳实践是将`css`文件导入到`index.js`文件中。
->
 
 `index.js`文件是React应用的入口，所以它总是会被运行。另一方面，如果将`css`文件导入到组件中，一旦组件被卸载，那么`css`样式可能会被移除。
