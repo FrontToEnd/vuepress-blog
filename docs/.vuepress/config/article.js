@@ -79,7 +79,6 @@ const article = [
       "react/React技巧之将useState作为对象数组",
       "react/React技巧之将useState作为字符串数组",
       "react/React技巧之输入onFocus和onBlur事件",
-      "react/React技巧之设置行内样式",
       "react/React技巧之select标签设置占位符",
     ],
   },
