@@ -622,3 +622,66 @@ html, body {
 ```
 
 具体效果查看[这里](https://codepen.io/Chokcoco/pen/JjroBPo)
+
+## 鼠标指针交互
+
+核心原理：
+
+1. 通过 `cursor: none` 隐藏页面的鼠标指针。
+2. 通过全局事件监听，模拟鼠标指针。
+3. 借助混合模式 `mix-blend-mode: exclusion`，就能够实现让模拟的鼠标指针能够智能地在不同背景色下改变自己的颜色。
+
+完整代码：
+
+```html
+<p>Lorem ipsum dolor sit amet</p>
+<div id="g-pointer-1"></div>
+<div id="g-pointer-2"></div>
+```
+
+```css
+body {
+    cursor: none;
+    background-color: #fff;
+}
+#g-pointer-1,
+#g-pointer-2
+{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 12px;
+    height: 12px;
+    background: #999;
+    border-radius: 50%;
+    background-color: #fff;
+    mix-blend-mode: exclusion;
+    z-index: 1;
+}
+#g-pointer-2 {
+    width: 42px;
+    height: 42px;
+    background: #222;
+    transition: .2s ease-out;
+}
+```
+
+```js
+const body = document.querySelector("body");
+const element = document.getElementById("g-pointer-1");
+const element2 = document.getElementById("g-pointer-2");
+const halfAlementWidth = element.offsetWidth / 2;
+const halfAlementWidth2 = element2.offsetWidth / 2;
+
+function setPosition(x, y) { 
+    element.style.transform  = `translate(${x - halfAlementWidth}px, ${y - halfAlementWidth}px)`;       element2.style.transform  = `translate(${x - halfAlementWidth2}px, ${y - halfAlementWidth2}px)`;
+}
+
+body.addEventListener('mousemove', (e) => {
+  window.requestAnimationFrame(function(){
+    setPosition(e.clientX, e.clientY);
+  });
+});
+```
+
+效果:[这里](https://codepen.io/Chokcoco/pen/rNJQXXV)
