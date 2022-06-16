@@ -89,6 +89,8 @@ const article = [
       "react/React技巧之重定向表单提交",
       "react/React技巧之鼠标悬浮添加行内样式",
       "react/React技巧之有条件地添加属性",
+      "react/React技巧之设置data属性",
+      "react/React技巧之导入并使用Image",
     ],
   },
   {
