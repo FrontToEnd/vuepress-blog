@@ -78,6 +78,10 @@ module.exports = {
         link: "/algorithm/",
       },
       {
+        text: "👱关于我",
+        link: "/about/",
+      },
+      {
         text: "🌈联系",
         items: [
           {
@@ -87,10 +91,6 @@ module.exports = {
           {
             text: "掘金",
             link: "https://juejin.cn/user/2911162519273294/posts",
-          },
-          {
-            text: "关于我",
-            link: "/about/",
           },
         ],
       },
