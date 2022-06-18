@@ -2,11 +2,12 @@ const guide = require("./config/guide");
 const article = require("./config/article");
 const notes = require("./config/notes");
 const algorithm = require("./config/algorithm");
+const about = require("./config/about");
 const path = require("path");
 const fs = require("fs");
 module.exports = {
   title: "chuck",
-  description: "一枚不知名前端",
+  description: "热爱分享的不知名前端",
   head: [
     ["link", { rel: "icon", href: "/favicon.ico" }], // 自定义favicon
   ],
@@ -87,6 +88,10 @@ module.exports = {
             text: "掘金",
             link: "https://juejin.cn/user/2911162519273294/posts",
           },
+          {
+            text: "关于我",
+            link: "/about/",
+          },
         ],
       },
       // {
@@ -104,6 +109,7 @@ module.exports = {
       "/article/": article.article,
       "/notes/": notes.notes,
       "/algorithm/": algorithm.algorithm,
+      "/about/": about.about,
     },
     backToTop: true, // 置顶按钮
   },

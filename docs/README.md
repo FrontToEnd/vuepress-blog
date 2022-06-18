@@ -2,12 +2,12 @@
 home: true
 heroImage: img/logo.png
 heroText: chuck
-tagline: 一枚不知名前端
+tagline: 热爱分享的不知名前端
 meta:
   - property: og:title
     content: chuck
   - property: og:description
-    content: 一枚不知名前端
+    content: 热爱分享的不知名前端
   - property: og:image
     content: https://www.qukun.com.cn/img/preview.png
   - property: og:url
