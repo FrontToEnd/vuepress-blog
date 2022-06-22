@@ -92,6 +92,10 @@ module.exports = {
             text: "掘金",
             link: "https://juejin.cn/user/2911162519273294/posts",
           },
+          {
+            text: "公众号",
+            link: "https://www.qukun.com.cn/img/wechat.png",
+          },
         ],
       },
       // {
