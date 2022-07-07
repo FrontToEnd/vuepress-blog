@@ -1975,3 +1975,240 @@ _curry2(function intersection(list1, list2) {
 
 module.exports = intersection;
 ```
+取出两个 list 中相同的元素组成的 set （集合：没有重复元素）。
+
+## intersperse
+
+```js
+var intersperse =
+/*#__PURE__*/
+_curry2(
+/*#__PURE__*/
+_checkForMethod('intersperse', function intersperse(separator, list) {
+  var out = [];
+  var idx = 0;
+  var length = list.length;
+
+  while (idx < length) {
+    if (idx === length - 1) {
+      out.push(list[idx]);
+    } else {
+      out.push(list[idx], separator);
+    }
+
+    idx += 1;
+  }
+
+  return out;
+}));
+```
+
+在列表的元素之间插入分割元素。核心思路是在新创建的`out`数组中，依次`push`遍历的当前元素以及分隔元素。如果索引位于数组末尾，则不添加分割元素。
+
+## invertObj
+
+```js
+
+/**
+ * const raceResults = {
+       first: 'alice',
+       second: 'jake'
+     };
+     R.invertObj(raceResults);
+     //=> { 'alice': 'first', 'jake':'second' }
+ */
+var invertObj =
+/*#__PURE__*/
+_curry1(function invertObj(obj) {
+  var props = keys(obj);
+  var len = props.length;
+  var idx = 0;
+  var out = {};
+
+  while (idx < len) {
+    var key = props[idx];
+    out[obj[key]] = key;
+    idx += 1;
+  }
+
+  return out;
+});
+
+module.exports = invertObj;
+
+```
+
+将对象的键、值交换位置：值作为键，对应的键作为值。交换后的键会被强制转换为字符串。注意，如果原对象同一值对应多个键，采用最后遍历到的键。核心思路是拿到原对象的键集合，遍历该集合，将原对象的值转换为新对象`out`的键，原对象的键转换为新对象`out`的值。最终返回新对象。
+
+## invert
+
+```js
+/**
+     const raceResultsByFirstName = {
+       first: 'alice',
+       second: 'jake',
+       third: 'alice',
+     };
+     R.invert(raceResultsByFirstName);
+     //=> { 'alice': ['first', 'third'], 'jake':['second'] }
+ */
+var invert =
+/*#__PURE__*/
+_curry1(function invert(obj) {
+  var props = keys(obj);
+  var len = props.length;
+  var idx = 0;
+  var out = {};
+
+  while (idx < len) {
+    var key = props[idx];
+    var val = obj[key];
+    var list = _has(val, out) ? out[val] : out[val] = [];
+    list[list.length] = key;
+    idx += 1;
+  }
+
+  return out;
+});
+```
+
+与 R.invertObj 类似，但会将值放入数组中，来处理一个键对应多个值的情况。该方法不会覆盖值，而是会放到数组中。核心逻辑是，判断新对象out里是否有原对象的值组成的属性，如果没有则以原对象的值为属性，空数组为值。如果有则往数组中追加值。
+
+## is
+
+```js
+/**
+     R.is(Object, {}); //=> true
+     R.is(Number, 1); //=> true
+     R.is(Object, 1); //=> false
+     R.is(String, 's'); //=> true
+     R.is(String, new String('')); //=> true
+     R.is(Object, new String('')); //=> true
+     R.is(Object, 's'); //=> false
+     R.is(Number, {}); //=> false
+ */
+var is =
+/*#__PURE__*/
+_curry2(function is(Ctor, val) {
+  return val != null && val.constructor === Ctor || val instanceof Ctor;
+});
+```
+
+检测一个对象（val）是否是给定构造函数的实例。该函数会依次检测其原型链，如果存在的话。首先判断给定值是否不为`null`或者`undefined`，因为这两者没有原型。然后判断`Ctor`是否为给定值的构造函数，如果不是则查找原型链。而`instanceof`操作符刚好返回布尔值，因此直接返回结果即可。
+
+## isEmpty
+
+```js
+/**
+     R.isEmpty([1, 2, 3]);   //=> false
+     R.isEmpty([]);          //=> true
+     R.isEmpty('');          //=> true
+     R.isEmpty(null);        //=> false
+     R.isEmpty({});          //=> true
+     R.isEmpty({length: 0}); //=> false
+ */
+var isEmpty =
+/*#__PURE__*/
+_curry1(function isEmpty(x) {
+  return x != null && equals(x, empty(x));
+});
+```
+
+检测给定值是否为其所属类型的空值，若是则返回 `true` ；否则返回 `false` 。可以看出，如果参数为`null`或者`undefined`，则返回`false`。然后判断参数和被empty处理后的是否相等，这里认为空数组、空对象等也是相等的。empty会将数组处理为空数组、对象处理为空对象、字符串处理为空字符串。
+
+## isNil
+
+```js
+
+/**
+     R.isNil(null); //=> true
+     R.isNil(undefined); //=> true
+     R.isNil(0); //=> false
+     R.isNil([]); //=> false
+ */
+var isNil =
+/*#__PURE__*/
+_curry1(function isNil(x) {
+  return x == null;
+});
+```
+
+检测输入值是否为 null 或 undefined 。
+
+## keys
+
+```js
+var hasEnumBug = !
+/*#__PURE__*/
+{
+  toString: null
+}.propertyIsEnumerable('toString');
+var nonEnumerableProps = ['constructor', 'valueOf', 'isPrototypeOf', 'toString', 'propertyIsEnumerable', 'hasOwnProperty', 'toLocaleString']; // Safari bug
+
+var hasArgsEnumBug =
+/*#__PURE__*/
+function () {
+  'use strict';
+
+  return arguments.propertyIsEnumerable('length');
+}();
+
+var contains = function contains(list, item) {
+  var idx = 0;
+
+  while (idx < list.length) {
+    if (list[idx] === item) {
+      return true;
+    }
+
+    idx += 1;
+  }
+
+  return false;
+};
+
+var keys = typeof Object.keys === 'function' && !hasArgsEnumBug ?
+/*#__PURE__*/
+_curry1(function keys(obj) {
+  return Object(obj) !== obj ? [] : Object.keys(obj);
+}) :
+/*#__PURE__*/
+_curry1(function keys(obj) {
+  if (Object(obj) !== obj) {
+    return [];
+  }
+
+  var prop, nIdx;
+  var ks = [];
+
+  var checkArgsLength = hasArgsEnumBug && _isArguments(obj);
+
+  for (prop in obj) {
+    if (_has(prop, obj) && (!checkArgsLength || prop !== 'length')) {
+      ks[ks.length] = prop;
+    }
+  }
+
+  if (hasEnumBug) {
+    nIdx = nonEnumerableProps.length - 1;
+
+    while (nIdx >= 0) {
+      prop = nonEnumerableProps[nIdx];
+
+      if (_has(prop, obj) && !contains(ks, prop)) {
+        ks[ks.length] = prop;
+      }
+
+      nIdx -= 1;
+    }
+  }
+
+  return ks;
+});
+```
+
+返回给定对象所有可枚举的、自身属性的属性名组成的列表。注意，不同 JS 运行环境输出数组的顺序可能不一致。先看一下前置的方法，方法中使用了`propertyIsEnumerable`，根据MDN的解释，`propertyIsEnumerable()` 方法返回一个布尔值，表示指定的属性是否可枚举。不能枚举的属性的白名单包括`'constructor', 'valueOf', 'isPrototypeOf', 'toString', 'propertyIsEnumerable', 'hasOwnProperty', 'toLocaleString'`共7个属性，这些不能枚举的属性需要我们牢记在心。
+如果Object.keys存在，则使用该方法进行处理。如果不存在，则继续往下走。这里还有一个前置判断，那就是`Object(obj) !== obj`，这个逻辑可以用来判断obj是否为对象，如果不是对象，那么就不相等。此时直接返回空数组。
+核心逻辑是：使用for...in遍历对象，如果属性是自有属性，并且length属性不可枚举，或者length属性可枚举但当前属性不是length属性时，将当前属性逐一放至新数组ks中。如果有枚举的bug，则判断不能枚举的值是否属于自有属性，并放至新数组ks中。
+
+## keysIn
