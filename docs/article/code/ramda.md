@@ -2212,3 +2212,99 @@ _curry1(function keys(obj) {
 核心逻辑是：使用for...in遍历对象，如果属性是自有属性，并且length属性不可枚举，或者length属性可枚举但当前属性不是length属性时，将当前属性逐一放至新数组ks中。如果有枚举的bug，则判断不能枚举的值是否属于自有属性，并放至新数组ks中。
 
 ## keysIn
+
+```js
+var keysIn =
+/*#__PURE__*/
+_curry1(function keysIn(obj) {
+  var prop;
+  var ks = [];
+
+  for (prop in obj) {
+    ks[ks.length] = prop;
+  }
+
+  return ks;
+});
+
+```
+
+返回给定对象所有属性（包括 prototype 属性）的属性名组成的列表。注意，不同 JS 运行环境输出数组的顺序可能不一致。其实核心就是使用for...in遍历自有属性以及原型链上的属性。
+
+## last
+
+```js
+var last =
+/*#__PURE__*/
+nth(-1);
+```
+
+返回列表或字符串的最后一个元素。内部调用的是nth方法，该方法后续会进行介绍。主要逻辑其实就是如果是字符串，则使用charAt取最后一个字符，如果是数组，则取数组长度 - 1的那一项。
+
+## lastIndexOf
+
+```js
+/**
+     R.lastIndexOf(3, [-1,3,3,0,1,2,3,4]); //=> 6
+     R.lastIndexOf(10, [1,2,3,4]); //=> -1
+ */
+var lastIndexOf =
+/*#__PURE__*/
+_curry2(function lastIndexOf(target, xs) {
+  if (typeof xs.lastIndexOf === 'function' && !_isArray(xs)) {
+    return xs.lastIndexOf(target);
+  } else {
+    var idx = xs.length - 1;
+
+    while (idx >= 0) {
+      if (equals(xs[idx], target)) {
+        return idx;
+      }
+
+      idx -= 1;
+    }
+
+    return -1;
+  }
+});
+```
+
+返回数组中某元素最后一次出现的位置，如果数组中不包含该项则返回 -1 。通过 R.equals 函数进行相等性判断。如果数组自带`lastIndexOf`方法，则直接调用。否则初始化索引，从后往前进行对比，找到目标元素所在的索引。
+
+## length
+
+```js
+var length =
+/*#__PURE__*/
+_curry1(function length(list) {
+  return list != null && _isNumber(list.length) ? list.length : NaN;
+});
+```
+
+通过 `list.length`，返回数组的大小（数组中元素的数量）。如果`list`不为`null`或者`undefined`，并且存在`length`属性时，返回数组长度；否则返回NaN。
+
+## map
+
+```js
+var map =
+/*#__PURE__*/
+_curry2(
+/*#__PURE__*/
+_dispatchable(['fantasy-land/map', 'map'], _xmap, function map(fn, functor) {
+  switch (Object.prototype.toString.call(functor)) {
+    case '[object Function]':
+      return curryN(functor.length, function () {
+        return fn.call(this, functor.apply(this, arguments));
+      });
+
+    case '[object Object]':
+      return _reduce(function (acc, key) {
+        acc[key] = fn(functor[key]);
+        return acc;
+      }, {}, keys(functor));
+
+    default:
+      return _map(fn, functor);
+  }
+}));
+```
