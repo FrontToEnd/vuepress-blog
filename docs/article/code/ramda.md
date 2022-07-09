@@ -343,6 +343,73 @@ module.exports = _clone;
 
 顾名思义，克隆函数。可以通过参数决定是否是深克隆。
 
+## _isArrayLike
+
+```js
+/**
+ * Tests whether or not an object is similar to an array.
+ *
+ * @private
+ * @category Type
+ * @category List
+ * @sig * -> Boolean
+ * @param {*} x The object to test.
+ * @return {Boolean} `true` if `x` has a numeric length property and extreme indices defined; `false` otherwise.
+ * @example
+ *
+ *      _isArrayLike([]); //=> true
+ *      _isArrayLike(true); //=> false
+ *      _isArrayLike({}); //=> false
+ *      _isArrayLike({length: 10}); //=> false
+ *      _isArrayLike({0: 'zero', 9: 'nine', length: 10}); //=> true
+ */
+
+var _isArrayLike =
+/*#__PURE__*/
+_curry1(function isArrayLike(x) {
+
+  // 是数组
+  if (_isArray(x)) {
+    return true;
+  }
+
+  // 是falsy值
+  if (!x) {
+    return false;
+  }
+
+  // 不是对象
+  if (typeof x !== 'object') {
+    return false;
+  }
+
+  // 是字符串
+  if (_isString(x)) {
+    return false;
+  }
+
+  // 元素节点，比如div，只要有length属性且不为0，则为类数组
+  if (x.nodeType === 1) {
+    return !!x.length;
+  }
+
+  // 对象length属性值为0，认为是类数组
+  if (x.length === 0) {
+    return true;
+  }
+
+
+  // 对象length属性不为0，则必须有0和length - 1的属性，否则不为类数组
+  if (x.length > 0) {
+    return x.hasOwnProperty(0) && x.hasOwnProperty(x.length - 1);
+  }
+
+  return false;
+});
+```
+
+从注释可以看出，如果x有数值的length属性，并且有两端的数值定义，那么就返回true，否则返回false。
+
 ## 可导出函数
 
 ## add
@@ -2283,28 +2350,183 @@ _curry1(function length(list) {
 
 通过 `list.length`，返回数组的大小（数组中元素的数量）。如果`list`不为`null`或者`undefined`，并且存在`length`属性时，返回数组长度；否则返回NaN。
 
-## map
+## mapAccum
 
 ```js
-var map =
-/*#__PURE__*/
-_curry2(
-/*#__PURE__*/
-_dispatchable(['fantasy-land/map', 'map'], _xmap, function map(fn, functor) {
-  switch (Object.prototype.toString.call(functor)) {
-    case '[object Function]':
-      return curryN(functor.length, function () {
-        return fn.call(this, functor.apply(this, arguments));
-      });
+/**
+     const digits = ['1', '2', '3', '4'];
+     const appender = (a, b) => [a + b, a + b];
 
-    case '[object Object]':
-      return _reduce(function (acc, key) {
-        acc[key] = fn(functor[key]);
-        return acc;
-      }, {}, keys(functor));
+     R.mapAccum(appender, 0, digits); //=> ['01234', ['01', '012', '0123', '01234']]
+ */
+var mapAccum =
+/*#__PURE__*/
+_curry3(function mapAccum(fn, acc, list) {
+  var idx = 0;
+  var len = list.length;
+  var result = [];
 
-    default:
-      return _map(fn, functor);
+  // 元组默认值为第二个参数acc
+  var tuple = [acc];
+
+  while (idx < len) {
+
+    // 元组的第一项是累积值
+    tuple = fn(tuple[0], list[idx]);
+
+    // 元组的第二项是当前值，并保存到结果数组中
+    result[idx] = tuple[1];
+    idx += 1;
   }
-}));
+
+  // 返回元组第一项累积值，以及结果数组组成的元组
+  return [tuple[0], result];
+});
+```
+
+mapAccum 的行为类似于 map 和 reduce 的组合；它将迭代函数作用于列表中的每个元素，从左往右传递经迭代函数计算的累积值，并将最后的累积值和由所有中间的累积值组成的列表一起返回。
+
+## mapAccumRight
+
+```js
+/**
+     const digits = ['1', '2', '3', '4'];
+     const appender = (a, b) => [b + a, b + a];
+
+     R.mapAccumRight(appender, 5, digits); //=> ['12345', ['12345', '2345', '345', '45']]
+ */
+var mapAccumRight =
+/*#__PURE__*/
+_curry3(function mapAccumRight(fn, acc, list) {
+  var idx = list.length - 1;
+  var result = [];
+  var tuple = [acc];
+
+  // 从列表最后一项开始遍历，其余逻辑跟mapAccum类似
+  while (idx >= 0) {
+    tuple = fn(tuple[0], list[idx]);
+    result[idx] = tuple[1];
+    idx -= 1;
+  }
+
+  return [tuple[0], result];
+});
+```
+
+mapAccumRight 的行为类似于 map 和 reduce 的组合；它将迭代函数作用于列表中的每个元素，从右往左传递经迭代函数计算的累积值，并将最后的累积值和由所有中间的累积值组成的列表一起返回。
+
+和 mapAccum 类似，除了列表遍历顺序是从右往左的。
+
+## mapObjIndexed
+
+```js
+/**
+     const xyz = { x: 1, y: 2, z: 3 };
+     const prependKeyAndDouble = (num, key, obj) => key + (num * 2);
+
+     R.mapObjIndexed(prependKeyAndDouble, xyz); //=> { x: 'x2', y: 'y4', z: 'z6' }
+ */
+var mapObjIndexed =
+/*#__PURE__*/
+_curry2(function mapObjIndexed(fn, obj) {
+  return _reduce(function (acc, key) {
+    acc[key] = fn(obj[key], key, obj);
+    return acc;
+  }, {}, keys(obj));
+});
+```
+
+Object 版本的 map。mapping function 接受三个参数： (value, key, obj) 。如果仅用到参数 value，则用 map 即可。可以看出，其实核心采用了内部方法_reduce来实现，只要了解了_reduce的实现逻辑，再来看就非常简单了。
+学习完_reduce的实现，再回过头来看，可以发现这里是针对对象的键组成的数组来reduce，将fn处理后的结果赋值给acc[key]，并最终返回acc累积的对象。
+
+## _reduce
+
+```js
+
+// 处理（类）数组的reduce
+function _arrayReduce(xf, acc, list) {
+  var idx = 0;
+  var len = list.length;
+
+  while (idx < len) {
+
+    // 执行xf(acc, list[idx])，并将结果更新到acc上
+    acc = xf['@@transducer/step'](acc, list[idx]);
+
+    if (acc && acc['@@transducer/reduced']) {
+      acc = acc['@@transducer/value'];
+      break;
+    }
+
+    idx += 1;
+  }
+
+  // 最终返回acc
+  return xf['@@transducer/result'](acc);
+}
+
+// 可迭代对象的reduce
+function _iterableReduce(xf, acc, iter) {
+  var step = iter.next();
+
+  while (!step.done) {
+
+    // 执行xf(acc, step.value)，并将结果更新到acc上
+    acc = xf['@@transducer/step'](acc, step.value);
+
+    if (acc && acc['@@transducer/reduced']) {
+      acc = acc['@@transducer/value'];
+      break;
+    }
+
+    // 继续迭代下一步
+    step = iter.next();
+  }
+
+  // 最终返回acc
+  return xf['@@transducer/result'](acc);
+}
+
+// 调用obj上指定的方法
+function _methodReduce(xf, acc, obj, methodName) {
+  return xf['@@transducer/result'](obj[methodName](bind(xf['@@transducer/step'], xf), acc));
+}
+
+// 处理可迭代的标记
+var symIterator = typeof Symbol !== 'undefined' ? Symbol.iterator : '@@iterator';
+export default function _reduce(fn, acc, list) {
+  if (typeof fn === 'function') {
+
+    // 再原型上添加'@@transducer/init'、'@@transducer/result'、'@@transducer/step'方法，方便后续的判断
+    fn = _xwrap(fn);
+  }
+
+  // 如果是数组或者类数组，则走该分支
+  if (_isArrayLike(list)) {
+    return _arrayReduce(fn, acc, list);
+  }
+
+  // 如果原型链上有'fantasy-land/reduce'方法，则走这里
+  if (typeof list['fantasy-land/reduce'] === 'function') {
+    return _methodReduce(fn, acc, list, 'fantasy-land/reduce');
+  }
+
+  // 如果数据是可迭代的，则走这里
+  if (list[symIterator] != null) {
+    return _iterableReduce(fn, acc, list[symIterator]());
+  }
+
+  // 如果是生成器，也就是可迭代的
+  if (typeof list.next === 'function') {
+    return _iterableReduce(fn, acc, list);
+  }
+
+  // 如果支持reduce，则走这里
+  if (typeof list.reduce === 'function') {
+    return _methodReduce(fn, acc, list, 'reduce');
+  }
+
+  // 处理不了，直接报错
+  throw new TypeError('reduce: list must be array or iterable');
+}
 ```
