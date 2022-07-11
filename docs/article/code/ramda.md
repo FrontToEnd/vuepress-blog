@@ -2413,7 +2413,7 @@ _curry3(function mapAccumRight(fn, acc, list) {
 });
 ```
 
-mapAccumRight 的行为类似于 map 和 reduce 的组合；它将迭代函数作用于列表中的每个元素，从右往左传递经迭代函数计算的累积值，并将最后的累积值和由所有中间的累积值组成的列表一起返回。
+mapAccumRight 的行为类似于 `map` 和 `reduce` 的组合；它将迭代函数作用于列表中的每个元素，从右往左传递经迭代函数计算的累积值，并将最后的累积值和由所有中间的累积值组成的列表一起返回。
 
 和 mapAccum 类似，除了列表遍历顺序是从右往左的。
 
@@ -2436,8 +2436,8 @@ _curry2(function mapObjIndexed(fn, obj) {
 });
 ```
 
-Object 版本的 map。mapping function 接受三个参数： (value, key, obj) 。如果仅用到参数 value，则用 map 即可。可以看出，其实核心采用了内部方法_reduce来实现，只要了解了_reduce的实现逻辑，再来看就非常简单了。
-学习完_reduce的实现，再回过头来看，可以发现这里是针对对象的键组成的数组来reduce，将fn处理后的结果赋值给acc[key]，并最终返回acc累积的对象。
+Object 版本的 map。mapping function 接受三个参数： (value, key, obj) 。如果仅用到参数 value，则用 map 即可。可以看出，其实核心采用了内部方法_reduce来实现，只要了解了`_reduce`的实现逻辑，再来看就非常简单了。
+学习完`_reduce`的实现，再回过头来看，可以发现这里是针对对象的键组成的数组来`reduce`，将fn处理后的结果赋值给`acc[key]`，并最终返回acc累积的对象。
 
 ## _reduce
 
@@ -2530,3 +2530,312 @@ export default function _reduce(fn, acc, list) {
   throw new TypeError('reduce: list must be array or iterable');
 }
 ```
+
+## match
+
+```js
+var match =
+/*#__PURE__*/
+_curry2(function match(rx, str) {
+  return str.match(rx) || [];
+});
+```
+
+正则匹配字符串。注意，如果没有匹配项，则返回空数组。和 String.prototype.match 不同，后者在没有匹配项时会返回 `null`。 其实就是使用字符串的`match`方法，如果该方法返回的`null`，则做兜底处理，直接返回空数组。
+
+## mathMod
+
+```js
+/**
+     R.mathMod(-17, 5);  //=> 3
+     R.mathMod(17, 5);   //=> 2
+     R.mathMod(17, -5);  //=> NaN
+     R.mathMod(17, 0);   //=> NaN
+     R.mathMod(17.2, 5); //=> NaN
+     R.mathMod(17, 5.3); //=> NaN
+ */
+var mathMod =
+/*#__PURE__*/
+_curry2(function mathMod(m, p) {
+  if (!_isInteger(m)) {
+    return NaN;
+  }
+
+  if (!_isInteger(p) || p < 1) {
+    return NaN;
+  }
+
+  return (m % p + p) % p;
+});
+```
+
+mathMod 和算术取模操作类似，而不像 % 操作符 （或 R.modulo）。所以 -17 % 5 等于 -2，而 mathMod(-17, 5) 等于 3 。`mathMod` 要求参数为整型，并且当模数等于 0 或者负数时返回 NaN 。
+有几个限制条件需要注意。如果第一个参数不是整型，则直接返回NaN。如果第二个参数不是整型，或者小于1时，也直接返回NaN。
+
+## max
+
+```js
+/**
+     R.max(789, 123); //=> 789
+     R.max('a', 'b'); //=> 'b'
+ */
+var max =
+/*#__PURE__*/
+_curry2(function max(a, b) {
+  return b > a ? b : a;
+});
+```
+
+这个正如其名，返回两个参数中的较大值。
+
+## maxBy
+
+```js
+/**
+     //  square :: Number -> Number
+     const square = n => n * n;
+
+     R.maxBy(square, -3, 2); //=> -3
+ */
+var maxBy =
+/*#__PURE__*/
+_curry3(function maxBy(f, a, b) {
+  return f(b) > f(a) ? b : a;
+});
+```
+
+接收一个函数和两个值，返回使给定函数执行结果较大的值。与`max`函数类似，这里接收函数来处理参数。
+
+## mean
+
+```js
+/**
+     R.mean([2, 7, 9]); //=> 6
+     R.mean([]); //=> NaN
+ */
+var mean =
+/*#__PURE__*/
+_curry1(function mean(list) {
+  return sum(list) / list.length;
+});
+```
+
+返回给定数字列表的平均值。该函数是用来处理List的，内部调用了`sum`函数，而`sum`函数的内部调用了`reduce(add, 0)`，也就是说，是通过`reduce`逐步累加计算出总和。如果传入空数组，那么`reduce`的结果便是0，`list`的长度也是0，`0 / 0`的结果为NaN。
+
+## median
+
+```js
+/**
+     R.median([2, 9, 7]); //=> 7
+     R.median([7, 2, 10, 9]); //=> 8
+     R.median([]); //=> NaN
+ */
+var median =
+/*#__PURE__*/
+_curry1(function median(list) {
+  var len = list.length;
+
+  if (len === 0) {
+    return NaN;
+  }
+
+  var width = 2 - len % 2;
+  var idx = (len - width) / 2;
+  return mean(Array.prototype.slice.call(list, 0).sort(function (a, b) {
+    return a < b ? -1 : a > b ? 1 : 0;
+  }).slice(idx, idx + width));
+});
+```
+
+返回给定数字列表的中位数。这里采用`sort`对数组进行排序，然后分割出数组的中间部分求出平均值。因为`sort`会改变原数组，所以采用`Array.prototype.slice.call(list, 0)`进行浅复制。当数组为偶数项时，`width = idx + 2`，当数组为奇数项时，`width = idx + 1`。
+
+## memoizeWith
+
+```js
+/**
+     let count = 0;
+     const factorial = R.memoizeWith(R.identity, n => {
+       count += 1;
+       return R.product(R.range(1, n + 1));
+     });
+     factorial(5); //=> 120
+     factorial(5); //=> 120
+     factorial(5); //=> 120
+     count; //=> 1
+ */
+var memoizeWith =
+/*#__PURE__*/
+_curry2(function memoizeWith(mFn, fn) {
+  var cache = {};
+  return _arity(fn.length, function () {
+    var key = mFn.apply(this, arguments);
+
+    if (!_has(key, cache)) {
+      cache[key] = fn.apply(this, arguments);
+    }
+
+    return cache[key];
+  });
+});
+```
+
+创建一个新函数，当调用时，会执行原函数，输出结果；并且缓存本次的输入参数及其对应的结果。 后续，若用相同的参数对缓存函数进行调用，不会再执行原函数，而是直接返回该参数对应的缓存值。
+`memoizeWith` 接受两个函数，第一个会将输入参数序列化为缓存键值对的“键值”，第二个是需要缓存的函数。内部是通过闭包cache对象来缓存执行过的函数。如果第一个参数的结果存在于cache中，则直接返回缓存的结果。
+
+## mergeAll
+
+```js
+/**
+     R.mergeAll([{foo:1},{bar:2},{baz:3}]); //=> {foo:1,bar:2,baz:3}
+     R.mergeAll([{foo:1},{foo:2},{bar:2}]); //=> {foo:2,bar:2}
+ */
+var mergeAll =
+/*#__PURE__*/
+_curry1(function mergeAll(list) {
+  return _objectAssign.apply(null, [{}].concat(list));
+});
+```
+
+将对象类型列表合并为一个对象。从源码里可以看出，是将空对象`{}`拼接到`list`前面，并调用`_objectAssign`来实现合并。`list`里每一项都会作为内部方法的参数，包括新拼接的空对象。下面就看下`_objectAssign`的实现。
+回过头来看，`mergeAll`通过接收一个数组来合并对象，只需将拼接了空对象的数组传递给apply的第二个参数，就可以实现拼接N个对象。
+
+## _objectAssign
+
+```js
+function _objectAssign(target) {
+
+  // 不能转换undefined或者null
+  if (target == null) {
+    throw new TypeError('Cannot convert undefined or null to object');
+  }
+
+  // 显示将第一个参数转换为对象，以此为基准进行合并
+  var output = Object(target);
+  var idx = 1;
+
+  // 缓存所有参数的个数
+  var length = arguments.length;
+
+  // 从第二个参数开始遍历
+  while (idx < length) {
+    var source = arguments[idx];
+
+    if (source != null) {
+      for (var nextKey in source) {
+        if (_has(nextKey, source)) {
+          // 对象上的自有属性会浅拷贝到output对象中，意味着同名属性后面会覆盖前面的
+          output[nextKey] = source[nextKey];
+        }
+      }
+    }
+
+    idx += 1;
+  }
+
+  // 返回合并后的对象
+  return output;
+}
+
+// 优先使用对象的原生方法assign，如果没有则使用_objectAssign
+export default typeof Object.assign === 'function' ? Object.assign : _objectAssign;
+```
+
+可以将`_objectAssign`看作是对`assign`的实现。
+
+## mergeLeft
+
+```js
+/**
+     R.mergeLeft({ 'age': 40 }, { 'name': 'fred', 'age': 10 });
+     //=> { 'name': 'fred', 'age': 40 }
+ */
+var mergeLeft =
+/*#__PURE__*/
+_curry2(function mergeLeft(l, r) {
+  return _objectAssign({}, r, l);
+});
+```
+
+合并两个对象的自身属性（不包括 `prototype` 属性）。如果某个 `key` 在两个对象中都存在，使用前一个对象对应的属性值。按照上面分析的`_objectAssign`的实现，后面对象的同名属性会覆盖前面的，因此如果想以前一个对象属性为基准，将前一个对象放到靠后的位置即可。
+
+## mergeRight
+
+```js
+/**
+     R.mergeRight({ 'name': 'fred', 'age': 10 }, { 'age': 40 });
+     //=> { 'name': 'fred', 'age': 40 }
+ */
+var mergeRight =
+/*#__PURE__*/
+_curry2(function mergeRight(l, r) {
+  return _objectAssign({}, l, r);
+});
+```
+
+合并两个对象的自身属性（不包括 prototype 属性）。如果某个 key 在两个对象中都存在，使用后一个对象对应的属性值。与`mergeLeft`类似，合并顺序相反。
+
+## mergeWithKey
+
+```js
+/**
+     let concatValues = (k, l, r) => k == 'values' ? R.concat(l, r) : r
+     R.mergeWithKey(concatValues,
+                    { a: true, thing: 'foo', values: [10, 20] },
+                    { b: true, thing: 'bar', values: [15, 35] });
+     //=> { a: true, b: true, thing: 'bar', values: [10, 20, 15, 35] }
+ */
+var mergeWithKey =
+/*#__PURE__*/
+_curry3(function mergeWithKey(fn, l, r) {
+  var result = {};
+  var k;
+
+  for (k in l) {
+    // 处理l中的自有属性，如果当前属性也存在于r中，则使用fn进行处理
+    if (_has(k, l)) {
+      result[k] = _has(k, r) ? fn(k, l[k], r[k]) : l[k];
+    }
+  }
+
+  for (k in r) {
+    // 处理r中的自有属性，仅处理结果对象中尚不存在的属性
+    // 如果结果对象中已存在，只能说明该属性是l和r中共有的，已被fn处理过，不能进行覆盖
+    if (_has(k, r) && !_has(k, result)) {
+      result[k] = r[k];
+    }
+  }
+
+  // 返回合并后的对象
+  return result;
+});
+```
+
+使用给定的两个对象自身属性（不包括 prototype 属性）来创建一个新对象。
+
+如果某个 key 在两个对象中都存在，则使用给定的函数对该 key 和每个对象该 key 对应的 value 进行处理，处理结果作为新对象该 key 对应的值。
+
+## mergeWith
+
+```js
+/**
+     R.mergeWith(R.concat,
+                 { a: true, values: [10, 20] },
+                 { b: true, values: [15, 35] });
+     //=> { a: true, b: true, values: [10, 20, 15, 35] }
+ */
+var mergeWith =
+/*#__PURE__*/
+_curry3(function mergeWith(fn, l, r) {
+  return mergeWithKey(function (_, _l, _r) {
+    return fn(_l, _r);
+  }, l, r);
+});
+```
+
+使用给定的两个对象自身属性（不包括 prototype 属性）来创建一个新对象。
+
+如果某个 key 在两个对象中都存在，则使用给定的函数对每个对象该 key 对应的 value 进行处理，处理结果作为新对象该 key 对应的值。
+
+可以看出，内部其实调用的还是`mergeWithKey`函数。当不需要自定义fn函数时，可以使用`mergeWith`。
+
+## mergeDeepWithKey
