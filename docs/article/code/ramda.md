@@ -2839,3 +2839,312 @@ _curry3(function mergeWith(fn, l, r) {
 可以看出，内部其实调用的还是`mergeWithKey`函数。当不需要自定义fn函数时，可以使用`mergeWith`。
 
 ## mergeDeepWithKey
+
+```js
+/**
+     let concatValues = (k, l, r) => k == 'values' ? R.concat(l, r) : r
+     R.mergeDeepWithKey(concatValues,
+                        { a: true, c: { thing: 'foo', values: [10, 20] }},
+                        { b: true, c: { thing: 'bar', values: [15, 35] }});
+     //=> { a: true, b: true, c: { thing: 'bar', values: [10, 20, 15, 35] }}
+ */
+var mergeDeepWithKey =
+/*#__PURE__*/
+_curry3(function mergeDeepWithKey(fn, lObj, rObj) {
+  return mergeWithKey(function (k, lVal, rVal) {
+
+    // 如果两者都是对象，则递归继续处理
+    if (_isObject(lVal) && _isObject(rVal)) {
+      return mergeDeepWithKey(fn, lVal, rVal);
+    } else {
+      // 否则使用给定的fn处理
+      return fn(k, lVal, rVal);
+    }
+  }, lObj, rObj);
+});
+```
+
+合并两个对象的自身属性（不包括 prototype 属性）。如果某个 key 在两个对象中都存在：
+
+- 并且两个关联的值都是对象，则继续递归合并这两个值。
+- 否则，使用给定函数对该 key 和对应的两个值进行处理，并将返回值作为该 key 的新值。
+
+如果某 key 只存在于一个对象中，该键值对将作为结果对象的键值对。可以发现内部调用的是`mergeWithKey`函数。
+
+## mergeDeepLeft
+
+```js
+/**
+     R.mergeDeepLeft({ name: 'fred', age: 10, contact: { email: 'moo@example.com' }},
+                     { age: 40, contact: { email: 'baa@example.com' }});
+     //=> { name: 'fred', age: 10, contact: { email: 'moo@example.com' }}
+ */
+var mergeDeepLeft =
+/*#__PURE__*/
+_curry2(function mergeDeepLeft(lObj, rObj) {
+  return mergeDeepWithKey(function (k, lVal, rVal) {
+    return lVal;
+  }, lObj, rObj);
+});
+```
+
+合并两个对象的自身属性（不包括 prototype 属性）。如果某个 key 在两个对象中都存在：
+
+- 并且两个值都是对象，则继续递归合并这两个值。
+- 否则，采用第一个对象的值。
+
+内部调用的是`mergeDeepWithKey`函数，fn处理方式就是以`lVal`为准。
+
+## mergeDeepRight
+
+```js
+/**
+     R.mergeDeepRight({ name: 'fred', age: 10, contact: { email: 'moo@example.com' }},
+                      { age: 40, contact: { email: 'baa@example.com' }});
+     //=> { name: 'fred', age: 40, contact: { email: 'baa@example.com' }}
+ */
+var mergeDeepRight =
+/*#__PURE__*/
+_curry2(function mergeDeepRight(lObj, rObj) {
+  return mergeDeepWithKey(function (k, lVal, rVal) {
+    return rVal;
+  }, lObj, rObj);
+});
+```
+
+合并两个对象的自身属性（不包括 prototype 属性）。如果某个 key 在两个对象中都存在：
+
+- 并且两个值都是对象，则继续递归合并这两个值。
+- 否则，采用第二个对象的值。
+
+同理，内部调用的是`mergeDeepWithKey`函数，fn处理方式就是以`rVal`为准。
+
+## mergeDeepWith
+
+```js
+/**
+     R.mergeDeepWith(R.concat,
+                     { a: true, c: { values: [10, 20] }},
+                     { b: true, c: { values: [15, 35] }});
+     //=> { a: true, b: true, c: { values: [10, 20, 15, 35] }}
+ */
+var mergeDeepWith =
+/*#__PURE__*/
+_curry3(function mergeDeepWith(fn, lObj, rObj) {
+  return mergeDeepWithKey(function (k, lVal, rVal) {
+    return fn(lVal, rVal);
+  }, lObj, rObj);
+});
+```
+
+合并两个对象的自身属性（不包括 prototype 属性）。如果某个 key 在两个对象中都存在：
+
+- 并且两个关联的值都是对象，则继续递归合并这两个值。
+- 否则，使用给定函数对两个值进行处理，并将返回值作为该 key 的新值。
+
+如果某 key 只存在于一个对象中，该键值对将作为结果对象的键值对。
+
+## min
+
+```js
+var min =
+/*#__PURE__*/
+_curry2(function min(a, b) {
+  return b < a ? b : a;
+});
+```
+
+返回两个参数的较小者，支持柯里化。
+
+## minBy
+
+```js
+var minBy =
+/*#__PURE__*/
+_curry3(function minBy(f, a, b) {
+  return f(b) < f(a) ? b : a;
+});
+```
+
+接收一个函数和两个值，返回使给定函数执行结果较小的值，支持柯里化。
+
+## modulo
+
+```js
+var modulo =
+/*#__PURE__*/
+_curry2(function modulo(a, b) {
+  return a % b;
+});
+```
+
+用第一个参数除以第二个参数，并返回余数。注意，该函数是 JavaScript-style 的求模操作。数学求模另见 mathMod。不同之处在于，-17 % 5 等于 -2，而 mathMod(-17, 5) 等于 3。
+
+## move
+
+```js
+/**
+     R.move(0, 2, ['a', 'b', 'c', 'd', 'e', 'f']); //=> ['b', 'c', 'a', 'd', 'e', 'f']
+     R.move(-1, 0, ['a', 'b', 'c', 'd', 'e', 'f']); //=> ['f', 'a', 'b', 'c', 'd', 'e'] list rotation
+ */
+var move =
+/*#__PURE__*/
+_curry3(function (from, to, list) {
+  // 缓存list长度
+  var length = list.length;
+
+  // 复制list，防止修改原数组
+  var result = list.slice();
+
+  // 处理负索引，当索引为负，则length加上负索引
+  var positiveFrom = from < 0 ? length + from : from;
+  var positiveTo = to < 0 ? length + to : to;
+
+  // 将from索引所在元素从result中删除，并记录在item变量
+  var item = result.splice(positiveFrom, 1);
+
+  // 如果处理后的索引依旧小于0或者大于等于数组长度，那索引是无效的，直接返回原数组
+  // 由于from索引处的元素已经被摘出来，因此需要拼接的数组为[[0, positiveTo), item, [positiveTo, list.length)]
+  return positiveFrom < 0 || positiveFrom >= list.length || positiveTo < 0 || positiveTo >= list.length ? list : [].concat(result.slice(0, positiveTo)).concat(item).concat(result.slice(positiveTo, list.length));
+});
+```
+
+将列表中 from 索引处的元素移动到索引 to 处。可以看出支持负索引，大部分逻辑是处理极端情况，具体的分析看注释。
+
+## multiply
+
+```js
+/**
+     const double = R.multiply(2);
+     const triple = R.multiply(3);
+     double(3);       //=>  6
+     triple(4);       //=> 12
+     R.multiply(2, 5);  //=> 10
+ */
+var multiply =
+/*#__PURE__*/
+_curry2(function multiply(a, b) {
+  return a * b;
+});
+```
+
+两数相乘，等价于柯里化的 a * b 。
+
+## nAry
+
+```js
+/**
+     const takesTwoArgs = (a, b) => [a, b];
+
+     takesTwoArgs.length; //=> 2
+     takesTwoArgs(1, 2); //=> [1, 2]
+
+     const takesOneArg = R.nAry(1, takesTwoArgs);
+     takesOneArg.length; //=> 1
+     // Only `n` arguments are passed to the wrapped function
+     takesOneArg(1, 2); //=> [1, undefined]
+ */
+var nAry =
+/*#__PURE__*/
+_curry2(function nAry(n, fn) {
+  switch (n) {
+    case 0:
+      return function () {
+        return fn.call(this);
+      };
+
+    case 1:
+      return function (a0) {
+        return fn.call(this, a0);
+      };
+
+    case 2:
+      return function (a0, a1) {
+        return fn.call(this, a0, a1);
+      };
+
+    case 3:
+      return function (a0, a1, a2) {
+        return fn.call(this, a0, a1, a2);
+      };
+
+    case 4:
+      return function (a0, a1, a2, a3) {
+        return fn.call(this, a0, a1, a2, a3);
+      };
+
+    case 5:
+      return function (a0, a1, a2, a3, a4) {
+        return fn.call(this, a0, a1, a2, a3, a4);
+      };
+
+    case 6:
+      return function (a0, a1, a2, a3, a4, a5) {
+        return fn.call(this, a0, a1, a2, a3, a4, a5);
+      };
+
+    case 7:
+      return function (a0, a1, a2, a3, a4, a5, a6) {
+        return fn.call(this, a0, a1, a2, a3, a4, a5, a6);
+      };
+
+    case 8:
+      return function (a0, a1, a2, a3, a4, a5, a6, a7) {
+        return fn.call(this, a0, a1, a2, a3, a4, a5, a6, a7);
+      };
+
+    case 9:
+      return function (a0, a1, a2, a3, a4, a5, a6, a7, a8) {
+        return fn.call(this, a0, a1, a2, a3, a4, a5, a6, a7, a8);
+      };
+
+    case 10:
+      return function (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) {
+        return fn.call(this, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
+      };
+
+    default:
+      throw new Error('First argument to nAry must be a non-negative integer no greater than ten');
+  }
+});
+```
+
+将一个任意元（包括零元）的函数，封装成一个确定元数（参数个数）的函数。任何多余的参数都不会传入被封装的函数。
+
+由源码可以看出，最多可以处理10个参数的函数，超过10个参数就直接抛出错误。核心还是通过闭包缓存fn，通过switch语句走到不同的分支。分支内的函数只接收指定个数的参数，多余的参数都会被丢弃。然后通过fn.call(this)的方式来调用传入的fn函数。call的后续参数个数取决于n。
+
+## negate
+
+```js
+/**
+     R.negate(42); //=> -42
+ */
+var negate =
+/*#__PURE__*/
+_curry1(function negate(n) {
+  return -n;
+});
+```
+
+取反操作。简单明了，无须解释。
+
+## none
+
+```js
+/**
+     const isEven = n => n % 2 === 0;
+     const isOdd = n => n % 2 === 1;
+
+     R.none(isEven, [1, 3, 5, 7, 9, 11]); //=> true
+     R.none(isOdd, [1, 3, 5, 7, 8, 11]); //=> false
+ */
+var none =
+/*#__PURE__*/
+_curry2(function none(fn, input) {
+  return all(_complement(fn), input);
+});
+```
+
+如果列表中的元素都不满足 predicate，返回 true；否则返回 false。
+
+若第二个参数自身存在 none 方法，则调用自身的 none 方法。
