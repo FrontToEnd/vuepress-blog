@@ -3143,8 +3143,121 @@ var none =
 _curry2(function none(fn, input) {
   return all(_complement(fn), input);
 });
+
+function _complement(f) {
+  return function () {
+    return !f.apply(this, arguments);
+  };
+}
 ```
 
 如果列表中的元素都不满足 predicate，返回 true；否则返回 false。
 
-若第二个参数自身存在 none 方法，则调用自身的 none 方法。
+若第二个参数自身存在 none 方法，则调用自身的 none 方法。可以看出内部是对第二个参数的每个元素调用内部函数_complement。内部函数_complement就做了一件事，那就是将每个参数传入fn并执行，最终取反。
+
+## not
+
+```js
+var not =
+/*#__PURE__*/
+_curry1(function not(a) {
+  return !a;
+});
+```
+
+显而易见，逻辑非运算。
+
+## nth
+
+```js
+/**
+ *   const list = ['foo', 'bar', 'baz', 'quux'];
+     R.nth(1, list); //=> 'bar'
+     R.nth(-1, list); //=> 'quux'
+     R.nth(-99, list); //=> undefined
+
+     R.nth(2, 'abc'); //=> 'c'
+     R.nth(3, 'abc'); //=> ''
+ */
+var nth =
+/*#__PURE__*/
+_curry2(function nth(offset, list) {
+  var idx = offset < 0 ? list.length + offset : offset;  // 支持负数
+  return _isString(list) ? list.charAt(idx) : list[idx]; // 如果是字符串，则使用charAt来获取指定索引的字符；如果是数组，则通过索引来直接访问
+});
+```
+
+返回列表或字符串的第 n 个元素。如果 n 为负数，则返回索引为 length + n 的元素。兼容处理了列表和字符串。
+
+经过测试发现，如果字符串也直接使用`list[idx]`来获取的话，倘若索引不在字符串长度范围内，则返回undefined；如果使用charAt，则返回空字符串。
+
+## nthArg
+
+```js
+/**
+     R.nthArg(1)('a', 'b', 'c'); //=> 'b'
+     R.nthArg(-1)('a', 'b', 'c'); //=> 'c'
+ */
+var nthArg =
+/*#__PURE__*/
+_curry1(function nthArg(n) {
+  var arity = n < 0 ? 1 : n + 1;
+  return curryN(arity, function () {
+    return nth(n, arguments);
+  });
+});
+```
+
+返回一个函数，该函数返回它的第 n 个参数。
+
+## o
+
+```js
+var o =
+/*#__PURE__*/
+_curry3(function o(f, g, x) {
+  return f(g(x));
+});
+```
+
+o 是一个柯里化组合函数，返回一元函数。与 compose 不同的是，传递给 o 的最右边的函数为一元函数。
+可以看出，R.o(f, g, x) = f(g(x))。从右到左执行函数组合。
+
+## objOf
+
+```js
+/**
+     const matchPhrases = R.compose(
+       R.objOf('must'),
+       R.map(R.objOf('match_phrase'))
+     );
+     matchPhrases(['foo', 'bar', 'baz']); //=> {must: [{match_phrase: 'foo'}, {match_phrase: 'bar'}, {match_phrase: 'baz'}]}
+ */
+var objOf =
+/*#__PURE__*/
+_curry2(function objOf(key, val) {
+  var obj = {};
+  obj[key] = val;
+  return obj;
+});
+```
+
+创建一个包含单个键值对的对象。第一个参数为键，第二个参数为值。最终返回单个键值对的对象。
+
+## of
+
+```js
+/**
+     R.of(null); //=> [null]
+     R.of([42]); //=> [[42]]
+ */
+var of =
+/*#__PURE__*/
+_curry1(_of);
+
+function _of(x) {
+  return [x];
+}
+```
+
+将给定值作为元素，封装成单元素数组。R.of 与 ES6 的 of 不同。
