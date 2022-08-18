@@ -3261,3 +3261,549 @@ function _of(x) {
 ```
 
 将给定值作为元素，封装成单元素数组。R.of 与 ES6 的 of 不同。
+
+## omit
+
+```js
+/**
+ * R.omit(['a', 'd'], {a: 1, b: 2, c: 3, d: 4}); //=> {b: 2, c: 3}
+ */
+var omit =
+/*#__PURE__*/
+_curry2(function omit(names, obj) {
+  var result = {};
+  var index = {};
+  var idx = 0;
+  var len = names.length;
+
+  while (idx < len) {
+    index[names[idx]] = 1; // 将参数一指定的key放入index对象
+    idx += 1;
+  }
+
+  for (var prop in obj) {
+    if (!index.hasOwnProperty(prop)) { // 遍历参数二对象，并排除index对象中的key
+      result[prop] = obj[prop]; // 将剩余key放入结果对象中，并返回
+    }
+  }
+
+  return result;
+});
+```
+
+删除对象中给定的 keys 对应的属性。核心逻辑可以看做是计算两个对象的差集。
+
+## once
+
+```js
+var once =
+/*#__PURE__*/
+_curry1(function once(fn) {
+  var called = false;
+  var result;
+  return _arity(fn.length, function () {
+    if (called) {
+      return result;
+    }
+
+    called = true;
+    result = fn.apply(this, arguments);
+    return result;
+  });
+});
+```
+
+创建一个只执行一次的函数。如果没有执行过，则执行fn，并将结果存储到result，同时将called置为true。等后续再次执行时，直接返回result。_arity的作用是返回一个新函数。
+
+## or
+
+```js
+/**
+     R.or(true, false); //=> true
+     R.or(false, true); //=> true
+ */
+var or =
+/*#__PURE__*/
+_curry2(function or(a, b) {
+  return a || b;
+});
+```
+
+逻辑或运算，只要有一个参数为真（truth-y），就返回 true；否则返回 false。
+
+## pair
+
+```js
+/**
+ * R.pair('foo', 'bar'); //=> ['foo', 'bar']
+ */
+var pair =
+/*#__PURE__*/
+_curry2(function pair(fst, snd) {
+  return [fst, snd];
+});
+```
+
+接收两个参数，fst 和 snd，返回数组 [fst, snd]。
+
+## partial
+
+```js
+/**
+     const multiply2 = (a, b) => a * b;
+     const double = R.partial(multiply2, [2]);
+     double(2); //=> 4
+ */
+
+var partial =
+/*#__PURE__*/
+_createPartialApplicator(_concat);
+```
+
+部分应用。
+
+接收两个参数：函数 f 和 参数列表，返回函数 g。当调用 g 时，将初始参数和 g 的参数顺次传给 f，并返回 f 的执行结果。
+
+源码分为两部分解读，首先是_concat：
+
+```js
+/**
+ *  _concat([4, 5, 6], [1, 2, 3]); //=> [4, 5, 6, 1, 2, 3]
+ */
+export default function _concat(set1, set2) {
+  set1 = set1 || [];
+  set2 = set2 || [];
+  var idx;
+  var len1 = set1.length;
+  var len2 = set2.length;
+  var result = [];
+  idx = 0;
+
+  while (idx < len1) {
+    result[result.length] = set1[idx];
+    idx += 1;
+  }
+
+  idx = 0;
+
+  while (idx < len2) {
+    result[result.length] = set2[idx];
+    idx += 1;
+  }
+
+  return result;
+}
+```
+
+可以看出，_concat的作用与Array.concat的作用相同，依次将两个参数内数组元素放入result数组中。通过result[result.length]来为数组追加元素。
+
+其次是_createPartialApplicator：
+
+```js
+export default function _createPartialApplicator(concat) {
+  return _curry2(function (fn, args) {
+    return _arity(Math.max(0, fn.length - args.length), function () {
+      return fn.apply(this, concat(args, arguments));
+    });
+  });
+}
+```
+
+这个函数稍微有些复杂。主要是做了柯里化以及返回新函数的处理。核心逻辑是存储第一次传入的参数args，并且返回一个参数个数为fn.length - args.length的新函数。等新函数传入相应参数并调用后，最终会将两次传入的参数args以及arguments进行拼接，从而执行fn函数。
+
+综上，偏函数会返回一个新的函数，这个函数接收剩余的参数，执行该函数会最终将所有参数进行拼接，并调用fn函数。
+
+## partialRight
+
+```js
+var partialRight =
+_createPartialApplicator(flip(_concat));
+```
+
+与partial作用相似，只不过partialRight是先拼接后面的参数，再拼接第一次传入的参数。这里通过flip来调换参数拼接的顺序。
+
+## path
+
+```js
+/**
+ * R.path(['a', 'b'], {a: {b: 2}}); //=> 2
+ * R.path(['a', 'b'], {c: {b: 2}}); //=> undefined
+ */
+var path =
+/*#__PURE__*/
+_curry2(function path(pathAr, obj) {
+  return paths([pathAr], obj)[0];
+});
+```
+
+取出给定路径上的值。内部是直接调用了paths函数，并取其第一项。后面会继续分析paths函数，此处不表。
+
+## pathOr
+
+```js
+/**
+ *   R.pathOr('N/A', ['a', 'b'], {a: {b: 2}}); //=> 2
+ *   R.pathOr('N/A', ['a', 'b'], {c: {b: 2}}); //=> "N/A"
+ */
+var pathOr =
+/*#__PURE__*/
+_curry3(function pathOr(d, p, obj) {
+  return defaultTo(d, path(p, obj));
+});
+```
+
+如果非空对象在给定路径上存在值，则将该值返回；否则返回给定的默认值。defaultTo会在第二参数为null、undefined或者NaN时返回默认值d。
+
+## paths
+
+```js
+/**
+     R.paths([['a', 'b'], ['p', 0, 'q']], {a: {b: 2}, p: [{q: 3}]}); //=> [2, 3]
+     R.paths([['a', 'b'], ['p', 'r']], {a: {b: 2}, p: [{q: 3}]}); //=> [2, undefined]
+ */
+var paths =
+/*#__PURE__*/
+_curry2(function paths(pathsArray, obj) {
+  return pathsArray.map(function (paths) { // 遍历参数一（二维数组）
+    var val = obj;
+    var idx = 0;
+    var p;
+
+    while (idx < paths.length) { // 遍历每一项数组路径
+      if (val == null) { // 中途发现取的值为null或者undefined，则说明此路不通，提前返回。
+        return;
+      }
+
+      p = paths[idx]; // 取出数组路径的当前项
+      val = _isInteger(p) ? nth(p, val) : val[p]; // 如果当前路径是数字，说明要取数组的某个索引下的值；如果是字符串，则直接通过中括号语法取值，并重新赋值给val，方便后续循环判断
+      idx += 1;
+    }
+
+    return val;
+  });
+});
+```
+
+提取对象中指定路径数组（paths）上的对应的值（values）。核心逻辑是针对于路径数组在对象上一条路走到底，直到提前发现走不通或者走到尽头并返回该值。
+
+## pick
+
+```js
+/**
+     R.pick(['a', 'd'], {a: 1, b: 2, c: 3, d: 4}); //=> {a: 1, d: 4}
+     R.pick(['a', 'e', 'f'], {a: 1, b: 2, c: 3, d: 4}); //=> {a: 1}
+ */
+var pick =
+/*#__PURE__*/
+_curry2(function pick(names, obj) {
+  var result = {};
+  var idx = 0;
+
+  while (idx < names.length) { // 遍历键数组
+    if (names[idx] in obj) { // 如果指定键存在于对象中
+      result[names[idx]] = obj[names[idx]]; // 则将所对应的属性赋值给新对象的同名键中
+    }
+
+    idx += 1;
+  }
+
+  return result;
+});
+```
+
+返回对象的部分拷贝，其中仅包含指定键对应的属性。如果某个键不存在，则忽略该属性。
+
+## pickAll
+
+```js
+/**
+ *   R.pickAll(['a', 'd'], {a: 1, b: 2, c: 3, d: 4}); //=> {a: 1, d: 4}
+ *   R.pickAll(['a', 'e', 'f'], {a: 1, b: 2, c: 3, d: 4}); //=> {a: 1, e: undefined, f: undefined}
+ */
+var pickAll =
+/*#__PURE__*/
+_curry2(function pickAll(names, obj) {
+  var result = {};
+  var idx = 0;
+  var len = names.length;
+
+  while (idx < len) {
+    var name = names[idx];
+    result[name] = obj[name];
+    idx += 1;
+  }
+
+  return result;
+});
+```
+
+与 pick 类似，但 pickAll 会将不存在的属性以 key: undefined 键值对的形式返回。这里没有进行names[idx] in obj的判断，因此不存在的属性会取值为undefined，同时赋值给新对象的同名键。
+
+## pickBy
+
+```js
+/**
+     const isUpperCase = (val, key) => key.toUpperCase() === key;
+     R.pickBy(isUpperCase, {a: 1, b: 2, A: 3, B: 4}); //=> {A: 3, B: 4}
+ */
+var pickBy =
+/*#__PURE__*/
+_curry2(function pickBy(test, obj) {
+  var result = {};
+
+  for (var prop in obj) { // 遍历对象
+    if (test(obj[prop], prop, obj)) { // key满足参数一
+      result[prop] = obj[prop]; // 拷贝满足条件的键值对到新对象
+    }
+  }
+
+  return result;
+});
+```
+
+返回对象的部分拷贝，其中仅包含 key 满足 predicate 的属性。
+
+## pipe
+
+```js
+/**
+    const f = R.pipe(Math.pow, R.negate, R.inc);
+
+    f(3, 4); // -(3^4) + 1
+ */
+export default function pipe() {
+  if (arguments.length === 0) {
+    throw new Error('pipe requires at least one argument');
+  }
+
+  return _arity(arguments[0].length, reduce(_pipe, arguments[0], tail(arguments)));
+}
+
+
+export default function _pipe(f, g) {
+  return function () {
+    return g.call(this, f.apply(this, arguments));
+  };
+}
+```
+
+从左往右执行函数组合。第一个函数可以是任意元函数（参数个数不限），其余函数必须是一元函数。内部使用了几个函数，包括返回新函数的_arity；reduce处理所有参数；返回除第一个参数外的剩余参数数组的tail，以及内部函数_pipe。_pipe的作用是从左到右依次执行传入的函数。
+
+## pluck
+
+```js
+/**
+     R.pluck(0, [[1, 2], [3, 4]]);               //=> [1, 3]
+     R.pluck('val', {a: {val: 3}, b: {val: 5}}); //=> {a: 3, b: 5}
+ */
+var pluck =
+/*#__PURE__*/
+_curry2(function pluck(p, list) {
+  return map(prop(p), list);
+});
+```
+
+从列表内的每个对象元素中取出特定名称的属性，组成一个新的列表。它等价于 R.map(R.prop(k), f)。也就是说，内部逻辑是遍历list，对每一项执行prop(p)。而prop函数实际上就是运行的path函数。
+
+题外话，经常将pluck和pick搞混，按照字面意思pluck就是拔的意思，而pick是选择的意思。因此pick返回的是键值对，而pluck只返回属性组成的列表。
+
+## prepend
+
+```js
+/**
+ * R.prepend('fee', ['fi', 'fo', 'fum']); //=> ['fee', 'fi', 'fo', 'fum']
+ */
+var prepend =
+/*#__PURE__*/
+_curry2(function prepend(el, list) {
+  return _concat([el], list);
+});
+```
+
+在列表头部之前拼接一个元素。内部调用_concat进行数组拼接。按照这个思路，在列表尾部拼接一个元素也是很方便的。
+
+## product
+
+```js
+/**
+ * R.product([2,4,6,8,100,1]); //=> 38400
+ */
+var product = reduce(multiply, 1);
+```
+
+列表中的所有元素相乘。内部是调用reduce让列表中元素两两相乘，并给出了初始累积值1。
+
+## prop
+
+```js
+/**
+     R.prop('x', {x: 100}); //=> 100
+     R.prop('x', {}); //=> undefined
+     R.prop(0, [100]); //=> 100
+ */
+var prop =
+/*#__PURE__*/
+_curry2(function prop(p, obj) {
+  return path([p], obj);
+});
+```
+
+取出对象中指定属性的值。如果不存在，则返回 undefined。内部调用了path获取指定路径上的值。
+
+## props
+
+```js
+/**
+     R.props(['x', 'y'], {x: 1, y: 2}); //=> [1, 2]
+     R.props(['c', 'a', 'b'], {b: 2, a: 1}); //=> [undefined, 1, 2]
+ */
+var props =
+/*#__PURE__*/
+_curry2(function props(ps, obj) {
+  return ps.map(function (p) {
+    return path([p], obj);
+  });
+});
+```
+
+返回 prop 的数组：输入为 keys 数组，输出为对应的 values 数组。values 数组的顺序与 keys 的相同。与prop不同的是，此处多了一个map处理，因此返回的是一个数组。
+
+## range
+
+```js
+/**
+ *  R.range(1, 5);    //=> [1, 2, 3, 4]
+ */
+var range =
+/*#__PURE__*/
+_curry2(function range(from, to) {
+  if (!(_isNumber(from) && _isNumber(to))) { // 参数类型异常，抛出错误
+    throw new TypeError('Both arguments to range must be numbers');
+  }
+
+  var result = [];
+  var n = from;
+
+  while (n < to) { // 结束条件不包括等于to，因此最终结果也不包括to
+    result.push(n); // 依次将递增的n放入结果数组
+    n += 1;
+  }
+
+  return result;
+});
+```
+
+返回从 from 到 to 之间的所有数的升序列表。左闭右开（包含 from，不包含 to）。
+
+## reduce
+
+```js
+var reduce =
+/*#__PURE__*/
+_curry3(_reduce);
+```
+
+左折叠操作。遍历列表，相继调用二元迭代函数（参数为累积值和从数组中取出的当前元素），将本次迭代结果作为下次迭代的累积值。返回最终累积值。可以用 R.reduced 提前终止遍历操作。
+
+这个函数属于老面孔了，很多函数内部都会调用，因此要重点掌握。我们已经分析过_reduce的实现了，想要复习的可以回过头去看看。
+
+## reduced
+
+```js
+/**
+    R.reduce(
+      (acc, item) => item > 3 ? R.reduced(acc) : acc.concat(item),
+      [],
+      [1, 2, 3, 4, 5]) // [1, 2, 3]
+ */
+var reduced =
+/*#__PURE__*/
+_curry1(_reduced);
+
+
+function _reduced(x) {
+  return x && x['@@transducer/reduced'] ? x : {
+    '@@transducer/value': x,
+    '@@transducer/reduced': true
+  };
+}
+```
+
+返回一个封装的值，该值代表 reduce 或 transduce 操作的最终结果。
+
+返回值是一个黑盒：不保证其内部结构的稳定性。
+
+在_reduce的实现中，有一个关键逻辑如下：
+
+```js
+if (acc && acc['@@transducer/reduced']) {
+  acc = acc['@@transducer/value'];
+  break;
+}
+```
+
+可以看出，如果是经过reduced处理过的，则直接返回@@transducer/value所对应的累积值，并中断循环。因此可以用 R.reduced 提前终止遍历操作。
+
+## reduceRight
+
+```js
+/**
+ *   R.reduceRight(R.subtract, 0, [1, 2, 3, 4]) // => (1 - (2 - (3 - (4 - 0)))) = -2
+     //    -               -2
+     //   / \              / \
+     //  1   -            1   3
+     //     / \              / \
+     //    2   -     ==>    2  -1
+     //       / \              / \
+     //      3   -            3   4
+     //         / \              / \
+     //        4   0            4   0
+ */
+var reduceRight =
+/*#__PURE__*/
+_curry3(function reduceRight(fn, acc, list) {
+  var idx = list.length - 1; // 从右往左遍历
+
+  while (idx >= 0) {
+    acc = fn(list[idx], acc); // 处理函数的第一个参数为列表的当前值，第二个参数才为累计值
+    idx -= 1;
+  }
+
+  return acc;
+});
+```
+
+右折叠操作。类似于 reduce，除了遍历列表的顺序是从右向左的。
+
+## reduceWhile
+
+```js
+var reduceWhile =
+/*#__PURE__*/
+_curryN(4, [], function _reduceWhile(pred, fn, a, list) {
+  return _reduce(function (acc, x) {
+    return pred(acc, x) ? fn(acc, x) : _reduced(acc);
+  }, a, list);
+});
+```
+
+与 reduce 类似， reduceWhile 会遍历列表，相继调用二元迭代函数，并返回最终累积值。reduceWhile 在每次调用迭代函数前，先使用 predicate 进行判断，如果 predicate 返回 false ，则提前终止遍历操作，并返回当前累积值。
+
+可以看出，这里具备提前终止遍历的功能，内部就是采用_reduced来提前终止，是否终止取决于pred(acc, x)返回的布尔值。
+
+## remove
+
+```js
+/**
+ * R.remove(2, 3, [1,2,3,4,5,6,7,8]); //=> [1,2,6,7,8]
+ */
+var remove =
+/*#__PURE__*/
+_curry3(function remove(start, count, list) {
+  var result = Array.prototype.slice.call(list, 0); // 对原数组进行拷贝，防止修改原数组
+  result.splice(start, count); // 使用splice来删除count个元素，从start索引开始删
+  return result;
+});
+```
+
+删除列表中从 start 开始的 count 个元素。注意，该操作是非破坏性的：不改变原列表，返回处理后列表的拷贝。
