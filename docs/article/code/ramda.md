@@ -3807,3 +3807,145 @@ _curry3(function remove(start, count, list) {
 ```
 
 删除列表中从 start 开始的 count 个元素。注意，该操作是非破坏性的：不改变原列表，返回处理后列表的拷贝。
+
+## repeat
+
+```js
+/**
+ * R.repeat('hi', 5); //=> ['hi', 'hi', 'hi', 'hi', 'hi']
+ */
+var repeat =
+/*#__PURE__*/
+_curry2(function repeat(value, n) {
+  return times(always(value), n);
+});
+```
+
+生成包含 n 个同一元素的数组。内部借助了times函数和always函数。其中times函数会执行n次fn函数，fn也就是第一参数。always函数返回一个返回恒定值的函数。
+
+如果是对象进行重复，那么引用的是同一对象。
+
+## replace
+
+```js
+var replace =
+/*#__PURE__*/
+_curry3(function replace(regex, replacement, str) {
+  return str.replace(regex, replacement);
+});
+```
+
+替换字符串的子串或正则匹配到的值。本质就是将字符串的replace方法柯里化。
+
+## reverse
+
+```js
+/**
+ * R.reverse([1, 2, 3]);  //=> [3, 2, 1]
+ * R.reverse('abc');      //=> 'cba'
+ */
+var reverse =
+/*#__PURE__*/
+_curry1(function reverse(list) {
+  return _isString(list) ? list.split('').reverse().join('') : Array.prototype.slice.call(list, 0).reverse();
+});
+```
+
+对列表或字符串的排列顺序取反。如果是字符串，则转换为数组取反后再转换为字符串；如果是数组则拷贝后取反，因为取反会改变原数组。
+
+## scan
+
+```js
+/**
+     const numbers = [1, 2, 3, 4];
+     const factorials = R.scan(R.multiply, 1, numbers); //=> [1, 1, 2, 6, 24]
+ */
+var scan =
+/*#__PURE__*/
+_curry3(function scan(fn, acc, list) {
+  var idx = 0;
+  var len = list.length;
+  var result = [acc]; // 将初始累积值放入结果数组中
+
+  while (idx < len) {
+    acc = fn(acc, list[idx]); // 执行fn，并更新累积值
+    result[idx + 1] = acc; // 将最新的累积值放入结果数组尾部
+    idx += 1;
+  }
+
+  return result;
+});
+```
+
+Scan 与 reduce 类似，但会将每次迭代计算的累积值记录下来，组成一个列表返回。
+
+## slice
+
+```js
+/**
+ * R.slice(1, 3, ['a', 'b', 'c', 'd']);        //=> ['b', 'c']
+ */
+var slice =
+/*#__PURE__*/
+_curry3(
+/*#__PURE__*/
+_checkForMethod('slice', function slice(fromIndex, toIndex, list) {
+  return Array.prototype.slice.call(list, fromIndex, toIndex);
+}));
+```
+
+取出给定的列表或字符串（或带有 slice 方法的对象）中，从 fromIndex（包括）到 toIndex（不包括）的元素。本质还是使用数组的slice方法。
+
+## sort
+
+```js
+/**
+ * const diff = function(a, b) { return a - b; };
+ * R.sort(diff, [4,2,7,5]); //=> [2, 4, 5, 7]
+ */
+var sort =
+/*#__PURE__*/
+_curry2(function sort(comparator, list) {
+  return Array.prototype.slice.call(list, 0).sort(comparator);
+});
+```
+
+使用比较函数对列表进行排序。注意，返回的是列表的拷贝，不会修改原列表。因为原生的sort方法会修改原数组，因此这里对原数组进行拷贝。
+
+## sortBy
+
+```js
+var sortBy =
+/*#__PURE__*/
+_curry2(function sortBy(fn, list) {
+  return Array.prototype.slice.call(list, 0).sort(function (a, b) {
+    var aa = fn(a);
+    var bb = fn(b);
+    return aa < bb ? -1 : aa > bb ? 1 : 0;
+  });
+});
+```
+
+根据给定的函数对列表进行排序。与sort函数类似，只是这里的比较逻辑是根据fn执行后的结果来决定的。
+
+## sortWith
+
+```js
+var sortWith =
+/*#__PURE__*/
+_curry2(function sortWith(fns, list) {
+  return Array.prototype.slice.call(list, 0).sort(function (a, b) {
+    var result = 0;
+    var i = 0;
+
+    while (result === 0 && i < fns.length) { // 第一次或者后续比较结果相等时
+      result = fns[i](a, b);
+      i += 1;
+    }
+
+    return result;
+  });
+});
+```
+
+依据比较函数列表对输入列表进行排序。适合有多个维度比较时使用。当fns函数中的结果为0时，也就意味着当前比较的属性值相等，此时就会继续采用后续的比较方式。
