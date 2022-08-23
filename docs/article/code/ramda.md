@@ -3949,3 +3949,472 @@ _curry2(function sortWith(fns, list) {
 ```
 
 依据比较函数列表对输入列表进行排序。适合有多个维度比较时使用。当fns函数中的结果为0时，也就意味着当前比较的属性值相等，此时就会继续采用后续的比较方式。
+
+## split
+
+```js
+/**
+ * R.split('.', 'a.b.c.xyz.d'); //=> ['a', 'b', 'c', 'xyz', 'd']
+ */
+var split =
+/*#__PURE__*/
+invoker(1, 'split');
+```
+
+根据指定的分隔符将字符串拆分为字符串类型的数组。本质就是调用字符串上的split方法。
+
+## splitAt
+
+```js
+/**
+ * R.splitAt(1, [1, 2, 3]);          //=> [[1], [2, 3]]
+ * R.splitAt(5, 'hello world');      //=> ['hello', ' world']
+ */
+var splitAt =
+/*#__PURE__*/
+_curry2(function splitAt(index, array) {
+  return [slice(0, index, array), slice(index, length(array), array)];
+});
+```
+
+在指定的索引处拆分列表或者字符串。其实就是通过slice分两段截取字符串或者列表。然后拼接成一个数组。需要注意slice的分片范围是左闭右开。
+
+## splitEvery
+
+```js
+/**
+ * R.splitEvery(3, [1, 2, 3, 4, 5, 6, 7]); //=> [[1, 2, 3], [4, 5, 6], [7]]
+ * R.splitEvery(3, 'foobarbaz'); //=> ['foo', 'bar', 'baz']
+ */
+var splitEvery =
+/*#__PURE__*/
+_curry2(function splitEvery(n, list) {
+  if (n <= 0) { // 指定长度不符合要求，直接报错
+    throw new Error('First argument to splitEvery must be a positive integer');
+  }
+
+  var result = [];
+  var idx = 0;
+
+  while (idx < list.length) {
+    result.push(slice(idx, idx += n, list)); // 通过slice分批次切片，直到索引越过列表长度
+  }
+
+  return result;
+});
+```
+
+将列表拆分成指定长度的子列表集。核心逻辑是通过slice不断地切片，直到索引越过列表长度。
+
+## splitWhen
+
+```js
+/**
+ * R.splitWhen(R.equals(2), [1, 2, 3, 1, 2, 3]);   //=> [[1], [2, 3, 1, 2, 3]]
+ */
+var splitWhen =
+/*#__PURE__*/
+_curry2(function splitWhen(pred, list) {
+  var idx = 0;
+  var len = list.length;
+  var prefix = [];
+
+  while (idx < len && !pred(list[idx])) { // 将不满足条件的元素放入prefix数组中，直到遍历整个数组或者满足条件为止
+    prefix.push(list[idx]);
+    idx += 1;
+  }
+
+  return [prefix, Array.prototype.slice.call(list, idx)]; // 将不满足条件的数组，以及从满足条件的索引开始到数组末尾的部分数组组合成列表返回
+});
+```
+
+查找列表中首个满足 predicate 的元素，在该处将列表拆分为两部分。首个满足 predicate 的元素包含在后一部分。
+
+## startsWith
+
+```js
+/**
+ * R.startsWith('a', 'abc')                //=> true
+ * R.startsWith('b', 'abc')                //=> false
+ */
+var startsWith =
+/*#__PURE__*/
+_curry2(function (prefix, list) {
+  return equals(take(prefix.length, list), prefix);
+});
+```
+
+检查列表是否以给定的值开头。通过截取list长度为prefix.length的部分，与前缀进行相等比较，以此来判断是否以给定的值开头。
+
+## subtract
+
+```js
+/**
+ * R.subtract(10, 8); //=> 2
+ */
+var subtract =
+/*#__PURE__*/
+_curry2(function subtract(a, b) {
+  return Number(a) - Number(b);
+});
+```
+
+首个参数减去第二个参数。将两个参数显示转换为number并相减。
+
+## sum
+
+```js
+/**
+ * R.sum([2,4,6,8,100,1]); //=> 121
+ */
+var sum =
+/*#__PURE__*/
+reduce(add, 0);
+```
+
+对数组中所有元素求和。使用reduce和add的组合来达到求和的目的。这也是reduce的经典应用。
+
+## symmetricDifference
+
+```js
+var symmetricDifference =
+/*#__PURE__*/
+_curry2(function symmetricDifference(list1, list2) {
+  return concat(difference(list1, list2), difference(list2, list1));
+});
+```
+
+求对称差集。所有不属于两列表交集元素的集合，其元素在且仅在给定列表中的一个里面出现。分别找出list1和list2、list2和list1的差集，然后合并。
+
+## T
+
+```js
+/**
+ *  R.T(); //=> true
+ */
+var T = function () {
+  return true;
+};
+```
+
+恒定返回 true 的函数。忽略所有的输入参数。
+
+## tail
+
+```js
+/**
+ * R.tail([1, 2, 3]);  //=> [2, 3]
+ * R.tail([1, 2]);     //=> [2]
+ */
+var tail = slice(1, Infinity);
+```
+
+删除列表中的首个元素。如果第一个参数自身存在 slice 方法，则调用自身的 slice 方法。通过slice截取除首个元素外的其他所有元素。
+
+## take
+
+```js
+/**
+ * R.take(1, ['foo', 'bar', 'baz']); //=> ['foo']
+ */
+var take = function take(n, xs) {
+  return slice(0, n < 0 ? Infinity : n, xs);
+}
+```
+
+返回列表的前 n 个元素、字符串的前n个字符。 通过slice截取前n个元素或者字符。
+
+## takeLast
+
+```js
+/**
+ * R.takeLast(1, ['foo', 'bar', 'baz']); //=> ['baz']
+ */
+var takeLast =
+/*#__PURE__*/
+_curry2(function takeLast(n, xs) {
+  return drop(n >= 0 ? xs.length - n : 0, xs);
+});
+```
+
+返回列表的后 n 个元素。如果 n > list.length，则返回 list.length 个元素。本质依旧是通过slice来截取元素。
+
+## test
+
+```js
+/**
+ * R.test(/^x/, 'xyz'); //=> true
+ */
+var test =
+/*#__PURE__*/
+_curry2(function test(pattern, str) {
+  if (!_isRegExp(pattern)) { // 判断参数一是否为正则对象
+    throw new TypeError('‘test’ requires a value of type RegExp as its first argument; received ' + toString(pattern));
+  }
+
+  return _cloneRegExp(pattern).test(str); // 拷贝正则对象进行检测
+});
+```
+
+检测字符串是否匹配给定的正则表达式。核心是调用正则对象上的test方法来检测是否匹配。
+
+这里用到了两个内置函数，值得学习一下：
+
+```js
+export default function _isRegExp(x) {
+  return Object.prototype.toString.call(x) === '[object RegExp]';
+}
+
+export default function _cloneRegExp(pattern) {
+  return new RegExp(pattern.source, (pattern.global ? 'g' : '') + (pattern.ignoreCase ? 'i' : '') + (pattern.multiline ? 'm' : '') + (pattern.sticky ? 'y' : '') + (pattern.unicode ? 'u' : ''));
+}
+```
+
+_isRegExp采用了最常用的方式来判断某个变量是否为指定类型。可以看出，正则对象的toString字符串为'[object RegExp]'。
+
+_cloneRegExp用来拷贝正则对象。这里用到了正则对象原型上的一系列属性，分别为：
+
+- RegExp.prototype.source。source 属性返回一个值为当前正则表达式对象的模式文本的字符串，该字符串不会包含正则字面量两边的斜杠以及任何的标志字符。这刚好也是RegExp构造函数的第一个参数接受的内容。
+- RegExp.prototype.global。针对字符串中所有可能的匹配项测试正则表达式，还是仅针对第一个匹配项。global 属性表明正则表达式是否使用了 "g" 标志。global 的值是布尔对象，如果使用了 "g" 标志，则返回 true；否则返回 false。
+- RegExp.prototype.ignoreCase。匹配文本的时候是否忽略大小写。ignoreCase 属性表明正则表达式是否使用了 "i" 标志。ignoreCase 的值是布尔对象，如果使用了"i" 标志，则返回 true；否则，返回 false。
+- RegExp.prototype.multiline。是否进行多行搜索。multiline 属性表明正则表达式是否使用了 "m" 标志。multiline 是一个布尔对象，如果使用了 "m" 标志，则返回 true；否则，返回 false。
+- RegExp.prototype.sticky。sticky 属性反映了搜索是否具有粘性（ 仅从正则表达式的 lastIndex 属性表示的索引处搜索 ）。sticky 的值是 Boolean ，并在 y 标志使用时为真; 否则为假。如果一个表达式同时指定了 sticky 和 global，其将会忽略 global 标志。
+- RegExp.prototype.unicode。Unicode 功能是否开启。unicode 属性表明正则表达式带有"u" 标志。 unicode 的值是 Boolean，并且如果使用了 "u" 标志则为 true；否则为 false。"u" 标志开启了多种 Unicode 相关的特性。使用 "u" 标志，任何 Unicode 代码点的转义都会被解释。
+
+上述属性，除source外，其余都是返回布尔值且为只读属性，不可以修改。
+
+## thunkify
+
+```js
+/**
+ * R.thunkify((a, b) => a + b)(25, 17)(); //=> 42
+ */
+var thunkify =
+/*#__PURE__*/
+_curry1(function thunkify(fn) {
+  return curryN(fn.length, function createThunk() {
+    var fnArgs = arguments;
+    return function invokeThunk() {
+      return fn.apply(this, fnArgs);
+    };
+  });
+});
+```
+
+创建一个 thunk 版本的函数。 thunk 会延迟计算直到需要其结果，从而实现惰性求值。
+
+柯里化取决于第一个参数fn的实参个数。当参数个数达到时，会返回一个函数，执行该函数就会执行fn函数，也就是fn.apply(this, fnArgs)。通过闭包保存了fn接受的所有参数。
+
+## times
+
+```js
+/**
+ * R.times(R.identity, 5); //=> [0, 1, 2, 3, 4]
+ * 
+ * R.times(f, 2) = [f(0), f(1)]
+ */
+var times =
+/*#__PURE__*/
+_curry2(function times(fn, n) {
+  var len = Number(n); // 需要执行的次数，显示转换为数值
+  var idx = 0;
+  var list;
+
+  if (len < 0 || isNaN(len)) { // 如果数值不符合要求，则抛出范围报错
+    throw new RangeError('n must be a non-negative number'); // n必须是非负数
+  }
+
+  list = new Array(len); // 生成指定长度的数组
+
+  while (idx < len) {
+    list[idx] = fn(idx); // 依次为fn传入参数，并更新list数组。参数范围是0~n-1
+    idx += 1;
+  }
+
+  return list;
+});
+```
+
+执行输入的函数 n 次，返回由函数执行结果组成的数组。fn 为一元函数，n 次调用接收的参数为：从 0 递增到 n-1 。
+
+## toPairs
+
+```js
+/**
+ *  R.toPairs({a: 1, b: 2, c: 3}); //=> [['a', 1], ['b', 2], ['c', 3]]
+ */
+var toPairs =
+/*#__PURE__*/
+_curry1(function toPairs(obj) {
+  var pairs = [];
+
+  for (var prop in obj) {
+    if (_has(prop, obj)) { // 只处理自有属性
+      pairs[pairs.length] = [prop, obj[prop]]; // 传入键值对组成的数组
+    }
+  }
+
+  return pairs;
+});
+```
+
+将一个对象的属性转换成键、值二元组类型的数组，只处理对象自身的属性。注意：不同 JS 运行环境输出数组的顺序可能不一致。
+
+## toPairsIn
+
+```js
+var toPairsIn =
+/*#__PURE__*/
+_curry1(function toPairsIn(obj) {
+  var pairs = [];
+
+  for (var prop in obj) {
+    pairs[pairs.length] = [prop, obj[prop]];
+  }
+
+  return pairs;
+});
+```
+
+将一个对象的属性转换成键、值二元组类型的数组，包括原型链上的属性。没有使用_has进行过滤，因此使用for in包括原型链上的属性。
+
+## toString
+
+```js
+/**
+ * R.toString(42); //=> '42'
+ * R.toString([1, 2, 3]); //=> '[1, 2, 3]'
+ * R.toString('abc'); //=> '"abc"'
+ * R.toString({foo: 1, bar: 2, baz: 3}); //=> '{"bar": 2, "baz": 3, "foo": 1}'
+ */
+var toString =
+/*#__PURE__*/
+_curry1(function toString(val) {
+  return _toString(val, []);
+});
+```
+
+返回代表输入元素的字符串。求得的输出结果应该等价于输入的值。
+
+如果输入值是 [object Object] 对象，且自身含有 toString 方法（不是 Object.prototype.toString 方法），那么直接调用这个方法求返回值。
+
+核心是调用了_toString函数，下面就来具体看看：
+
+```js
+export default function _toString(x, seen) {
+  var recur = function recur(y) { // 递归处理
+    var xs = seen.concat([x]);
+    return _includes(y, xs) ? '<Circular>' : _toString(y, xs);
+  }; //  mapPairs :: (Object, [String]) -> [String]
+
+
+  var mapPairs = function (obj, keys) { // 返回键值对拼接的字符串组成的数组
+    return _map(function (k) {
+      return _quote(k) + ': ' + recur(obj[k]);
+    }, keys.slice().sort());
+  };
+
+  switch (Object.prototype.toString.call(x)) { // 判断传入的类型
+    case '[object Arguments]': // 函数参数
+      return '(function() { return arguments; }(' + _map(recur, x).join(', ') + '))'; // 拼接一个IIFE
+
+    case '[object Array]': // 数组，拼接为[x,x,x]格式的字符串
+      return '[' + _map(recur, x).concat(mapPairs(x, reject(function (k) {
+        return /^\d+$/.test(k);
+      }, keys(x)))).join(', ') + ']';
+
+    case '[object Boolean]': // 布尔值，如果是构造函数，则返回构造函数字符串，否则返回布尔值本身字符串
+      return typeof x === 'object' ? 'new Boolean(' + recur(x.valueOf()) + ')' : x.toString();
+
+    case '[object Date]': // 日期对象，返回相应的构造函数拼接字符串，比如'new Date("2022-02-03T04:05:06.000Z")'
+      return 'new Date(' + (isNaN(x.valueOf()) ? recur(NaN) : _quote(_toISOString(x))) + ')';
+
+    case '[object Null]': // null则返回null字符串
+      return 'null';
+
+    case '[object Number]': // 数值，如果是构造函数则拼接构造函数，否则判断是否为-0，如果是则返回'-0'，不是则返回10进制组成的字符串
+      return typeof x === 'object' ? 'new Number(' + recur(x.valueOf()) + ')' : 1 / x === -Infinity ? '-0' : x.toString(10);
+
+    case '[object String]': // 字符串，如果是构造函数则拼接构造函数，否则再给字符串包裹一层引号
+      return typeof x === 'object' ? 'new String(' + recur(x.valueOf()) + ')' : _quote(x);
+
+    case '[object Undefined]': // undefined则返回undefined字符串
+      return 'undefined';
+
+    default: // 上面都不满足时
+      if (typeof x.toString === 'function') { // 调用自身提供的toString
+        var repr = x.toString();
+
+        if (repr !== '[object Object]') { // 如果结果为原始类型，则直接返回
+          return repr;
+        }
+      }
+
+      return '{' + mapPairs(x, keys(x)).join(', ') + '}'; // 没有toString方法时，拼接为大括号包裹的逗号分隔的键或者键值对
+  }
+}
+```
+
+## transpose
+
+```js
+/**
+ *  R.transpose([[1, 2, 3], ['a', 'b', 'c']]) //=> [[1, 'a'], [2, 'b'], [3, 'c']] 
+ */
+var transpose =
+/*#__PURE__*/
+_curry1(function transpose(outerlist) {
+  var i = 0;
+  var result = [];
+
+  while (i < outerlist.length) {
+    var innerlist = outerlist[i]; // 二维数组的每项内部数组
+    var j = 0;
+
+    while (j < innerlist.length) { // 遍历内部数组
+      if (typeof result[j] === 'undefined') { // 如果结果二维数组里的某项数组不存在，则初试为空数组
+        result[j] = [];
+      }
+
+      result[j].push(innerlist[j]); // 依次将内部数组中元素逐个放入result的对应索引数组中
+      j += 1;
+    }
+
+    i += 1;
+  }
+
+  return result;
+});
+```
+
+二维数组行列转置。输入 n 个长度为 x 的数组，输出 x 个长度为 n 的数组。
+
+## trim
+
+```js
+/**
+ * R.trim('   xyz  '); //=> 'xyz'
+ */
+var ws = '\x09\x0A\x0B\x0C\x0D\x20\xA0\u1680\u180E\u2000\u2001\u2002\u2003' + '\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000\u2028' + '\u2029\uFEFF';
+var zeroWidth = '\u200b';
+var hasProtoTrim = typeof String.prototype.trim === 'function';
+
+var trim = !hasProtoTrim ||
+/*#__PURE__*/
+ws.trim() || !
+/*#__PURE__*/
+zeroWidth.trim() ?
+/*#__PURE__*/
+_curry1(function trim(str) {
+  var beginRx = new RegExp('^[' + ws + '][' + ws + ']*');
+  var endRx = new RegExp('[' + ws + '][' + ws + ']*$');
+  return str.replace(beginRx, '').replace(endRx, '');
+}) :
+/*#__PURE__*/
+_curry1(function trim(str) {
+  return str.trim();
+});
+```
+
+删除字符串首、尾两端的空白字符。针对于特殊字符进行了处理，比如说零宽字符、换行符、制表符、特殊空白字符等等。可以看出特殊的字符有十几种，在严格校验的场景下需要做特殊处理。
+
