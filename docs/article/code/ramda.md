@@ -4418,3 +4418,401 @@ _curry1(function trim(str) {
 
 删除字符串首、尾两端的空白字符。针对于特殊字符进行了处理，比如说零宽字符、换行符、制表符、特殊空白字符等等。可以看出特殊的字符有十几种，在严格校验的场景下需要做特殊处理。
 
+## tryCatch
+
+```js
+/**
+ * R.tryCatch(R.prop('x'), R.F)({x: true}); //=> true
+ */
+var tryCatch =
+/*#__PURE__*/
+_curry2(function _tryCatch(tryer, catcher) {
+  return _arity(tryer.length, function () {
+    try {
+      return tryer.apply(this, arguments);
+    } catch (e) {
+      return catcher.apply(this, _concat([e], arguments)); // 异常情况额外返回了原生catch捕获的报错信息
+    }
+  });
+});
+```
+
+tryCatch 接受两个函数：tryer 和 catcher，生成的函数执行 tryer，若未抛出异常，则返回执行结果。若抛出异常，则执行 catcher，返回 catcher 的执行结果。注意，为了有效的组合该函数，tryer 和 catcher 应返回相同类型的值。
+
+内部使用了原生的try...catch来处理异常情况。
+
+## type
+
+```js
+/**
+     R.type({}); //=> "Object"
+     R.type(1); //=> "Number"
+     R.type(false); //=> "Boolean"
+     R.type('s'); //=> "String"
+     R.type(null); //=> "Null"
+     R.type([]); //=> "Array"
+     R.type(/[A-z]/); //=> "RegExp"
+     R.type(() => {}); //=> "Function"
+     R.type(undefined); //=> "Undefined"
+ */
+var type =
+/*#__PURE__*/
+_curry1(function type(val) {
+  return val === null ? 'Null' : val === undefined ? 'Undefined' : Object.prototype.toString.call(val).slice(8, -1);
+});
+```
+
+用一个单词来描述输入值的（原生）类型，返回诸如 'Object'、'Number'、'Array'、'Null' 之类的结果。不区分用户自定义的类型，统一返回 'Object'。
+
+这里单独处理了null和undefined的情况，不过Object.prototype.toString.call也可以很好的处理这两种情况。至于这里为什么要单独处理，目前暂未想到合理的原因。
+
+## unapply
+
+```js
+/**
+ * R.unapply(JSON.stringify)(1, 2, 3); //=> '[1,2,3]'
+ */
+var unapply =
+/*#__PURE__*/
+_curry1(function unapply(fn) {
+  return function () {
+    return fn(Array.prototype.slice.call(arguments, 0));
+  };
+});
+```
+
+R.unapply 将一个使用数组作为参数的函数，变为一个不定参函数。内部会将返回的新函数所接收的参数使用Array.prototype.slice.call处理为数组。
+
+## uncurryN
+
+```js
+/**
+ * const addFour = a => b => c => d => a + b + c + d;
+ * const uncurriedAddFour = R.uncurryN(4, addFour);
+ * uncurriedAddFour(1, 2, 3, 4); //=> 10
+ */
+var uncurryN =
+/*#__PURE__*/
+_curry2(function uncurryN(depth, fn) {
+  return curryN(depth, function () {
+    var currentDepth = 1; // 记录当前执行函数的深度
+    var value = fn;
+    var idx = 0;
+    var endIdx;
+
+    while (currentDepth <= depth && typeof value === 'function') { // 只要value依旧是函数，则持续执行，直到执行完所有函数
+      endIdx = currentDepth === depth ? arguments.length : idx + value.length; // 记录每层函数所接收的参数终止位置
+      value = value.apply(this, Array.prototype.slice.call(arguments, idx, endIdx)); // 截取当前函数所接收的所有参数
+      currentDepth += 1;
+      idx = endIdx;
+    }
+
+    return value;
+  });
+});
+```
+
+将一个柯里化的函数转换为一个 n 元函数。
+
+## unfold
+
+```js
+/**
+ * const f = n => n > 50 ? false : [-n, n + 10];
+ * R.unfold(f, 10); //=> [-10, -20, -30, -40, -50]
+ */
+var unfold =
+/*#__PURE__*/
+_curry2(function unfold(fn, seed) {
+  var pair = fn(seed);
+  var result = [];
+
+  while (pair && pair.length) { // 当迭代函数返回的为数组且不为空时，不断遍历
+    result[result.length] = pair[0]; // 在结果数组末尾放入返回的数组的第一个元素
+    pair = fn(pair[1]); // 更新为迭代数组的第二个元素，供下一轮迭代使用
+  }
+
+  return result;
+});
+```
+
+通过一个种子值（ seed ）创建一个列表。unfold 接受一个迭代函数：该函数或者返回 false 停止迭代，或者返回一个长度为 2 的数组：数组首个元素添加到结果列表，第二个元素作为种子值传给下一轮迭代使用。
+
+## union
+
+```js
+var union =
+/*#__PURE__*/
+_curry2(
+/*#__PURE__*/
+compose(uniq, _concat));
+```
+
+集合并运算，合并两个列表为新列表（新列表中无重复元素）。
+
+这里做法是先合并两个列表，再通过uniq去除重复元素，这样就生成了并集且无重复元素。
+
+## unionWith
+
+```js
+var unionWith =
+/*#__PURE__*/
+_curry3(function unionWith(pred, list1, list2) {
+  return uniqWith(pred, _concat(list1, list2));
+});
+```
+
+集合并运算，合并两个列表为新列表（新列表中无重复元素）。由 predicate 的返回值决定两元素是否重复。
+
+这里主要使用了uniqWith来去重，下面我们马上就会讲到该方法的内部逻辑，继续往下看。
+
+## uniq
+
+```js
+/**
+ *  R.uniq([1, 1, 2, 1]); //=> [1, 2]
+ */
+var uniq =
+/*#__PURE__*/
+uniqBy(identity);
+```
+
+列表去重操作。返回无重复元素的列表。通过 R.equals 函数进行相等性判断。
+
+## uniqBy
+
+```js
+/**
+ * R.uniqBy(Math.abs, [-1, -5, 2, 10, 1, 2]); //=> [-1, -5, 2, 10]
+ */
+var uniqBy =
+/*#__PURE__*/
+_curry2(function uniqBy(fn, list) {
+  var set = new _Set();
+  var result = [];
+  var idx = 0;
+  var appliedItem, item;
+
+  while (idx < list.length) {
+    item = list[idx];
+    appliedItem = fn(item); // 通过给定的函数处理列表中的元素
+
+    if (set.add(appliedItem)) { // 将处理过的值添加到set中，如果添加成功则没有重复，将该值放入结果数组中
+      result.push(item); // 后续重复值不会添加，因此相同的值是保留第一个元素。
+    }
+
+    idx += 1;
+  }
+
+  return result;
+});
+```
+
+返回无重复元素的列表。元素通过给定的函数的返回值以及 R.equals 进行相同性判断。如果给定的函数返回值相同，保留第一个元素。
+
+可以看出，判断相等与否，其实逻辑是在内部函数_Set中。那么我们就来一睹_Set的芳容吧。
+
+## _Set
+
+```js
+import _includes from "./_includes.js";
+
+var _Set =
+/*#__PURE__*/
+function () { // 放入IIFE中，防止被猴子补丁
+  function _Set() {
+    /* globals Set */
+    this._nativeSet = typeof Set === 'function' ? new Set() : null; // 原生Set是否可用
+    this._items = {}; // 存储add的元素
+  }
+
+  // @param item The item to add to the Set
+  // @returns {boolean} true if the item did not exist prior, otherwise false
+  //
+  _Set.prototype.add = function (item) {
+    return !hasOrAdd(item, true, this); // 如果has则取反，返回false；如果没有则添加，返回true
+  }; //
+  // @param item The item to check for existence in the Set
+  // @returns {boolean} true if the item exists in the Set, otherwise false
+  //
+
+
+  _Set.prototype.has = function (item) {
+    return hasOrAdd(item, false, this);
+  }; //
+  // Combines the logic for checking whether an item is a member of the set and
+  // for adding a new item to the set.
+  //
+  // @param item       The item to check or add to the Set instance.
+  // @param shouldAdd  If true, the item will be added to the set if it doesn't
+  //                   already exist.
+  // @param set        The set instance to check or add to.
+  // @return {boolean} true if the item already existed, otherwise false.
+  //
+
+
+  return _Set;
+}();
+
+function hasOrAdd(item, shouldAdd, set) {
+  var type = typeof item; // 记录值的类型
+  var prevSize, newSize;
+
+  switch (type) {
+    case 'string':
+    case 'number':
+      // distinguish between +0 and -0
+      if (item === 0 && 1 / item === -Infinity) { // -0
+        if (set._items['-0']) { // -0已存在
+          return true;
+        } else { // -0不存在
+          if (shouldAdd) {
+            set._items['-0'] = true;
+          }
+
+          return false;
+        }
+      } // these types can all utilise the native Set
+
+
+      if (set._nativeSet !== null) { // 原生set可用
+        if (shouldAdd) { // 添加逻辑
+          prevSize = set._nativeSet.size;
+
+          set._nativeSet.add(item);
+
+          newSize = set._nativeSet.size;
+          return newSize === prevSize; // 让原生set进行去重，然后判断前后size是否相等
+        } else { // has逻辑
+          return set._nativeSet.has(item);
+        }
+      } else { // 原生set不可用
+        if (!(type in set._items)) { // 值的类型不在_items对象中
+          if (shouldAdd) {
+            set._items[type] = {}; // 新增一个以值的类型为键，空对象为value的键值对
+            set._items[type][item] = true; // 放入对应key的对象中，新增一个以值为键，布尔值true为value的键值对，表明该值已经被添加
+          }
+
+          return false;
+        } else if (item in set._items[type]) { // 值存在于特定类型的对象中
+          return true;
+        } else { // 值不存在于特定类型的对象中
+          if (shouldAdd) { 
+            set._items[type][item] = true; // 可以成功添加到该值类型的对象中
+          }
+
+          return false;
+        }
+      }
+
+    case 'boolean':
+      // set._items['boolean'] holds a two element array
+      // representing [ falseExists, trueExists ]
+      if (type in set._items) { // set._items['boolean']保存一个包含两个元素的数组表示[ falseExists, trueExists ]
+        var bIdx = item ? 1 : 0;
+
+        if (set._items[type][bIdx]) {
+          return true;
+        } else {
+          if (shouldAdd) {
+            set._items[type][bIdx] = true;
+          }
+
+          return false;
+        }
+      } else {
+        if (shouldAdd) {
+          set._items[type] = item ? [false, true] : [true, false];
+        }
+
+        return false;
+      }
+
+    case 'function':
+      // compare functions for reference equality
+      if (set._nativeSet !== null) {
+        if (shouldAdd) {
+          prevSize = set._nativeSet.size;
+
+          set._nativeSet.add(item);
+
+          newSize = set._nativeSet.size;
+          return newSize === prevSize;
+        } else {
+          return set._nativeSet.has(item);
+        }
+      } else {
+        if (!(type in set._items)) {
+          if (shouldAdd) {
+            set._items[type] = [item];
+          }
+
+          return false;
+        }
+
+        if (!_includes(item, set._items[type])) {
+          if (shouldAdd) {
+            set._items[type].push(item);
+          }
+
+          return false;
+        }
+
+        return true;
+      }
+
+    case 'undefined':
+      if (set._items[type]) {
+        return true;
+      } else {
+        if (shouldAdd) {
+          set._items[type] = true;
+        }
+
+        return false;
+      }
+
+    case 'object':
+      if (item === null) {
+        if (!set._items['null']) {
+          if (shouldAdd) {
+            set._items['null'] = true;
+          }
+
+          return false;
+        }
+
+        return true;
+      }
+
+    /* falls through */
+
+    default:
+      // reduce the search size of heterogeneous sets by creating buckets
+      // for each type.
+      type = Object.prototype.toString.call(item);
+
+      if (!(type in set._items)) {
+        if (shouldAdd) {
+          set._items[type] = [item];
+        }
+
+        return false;
+      } // scan through all previously applied items
+
+
+      if (!_includes(item, set._items[type])) {
+        if (shouldAdd) {
+          set._items[type].push(item);
+        }
+
+        return false;
+      }
+
+      return true;
+  }
+} // A simple Set type that honours R.equals semantics
+
+
+export default _Set;
+```
