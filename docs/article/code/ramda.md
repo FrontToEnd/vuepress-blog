@@ -4730,7 +4730,7 @@ function hasOrAdd(item, shouldAdd, set) {
 
     case 'function':
       // compare functions for reference equality
-      if (set._nativeSet !== null) {
+      if (set._nativeSet !== null) { // 利用原生set的能力判断
         if (shouldAdd) {
           prevSize = set._nativeSet.size;
 
@@ -4742,7 +4742,7 @@ function hasOrAdd(item, shouldAdd, set) {
           return set._nativeSet.has(item);
         }
       } else {
-        if (!(type in set._items)) {
+        if (!(type in set._items)) { // 使用数组存放函数
           if (shouldAdd) {
             set._items[type] = [item];
           }
@@ -4762,7 +4762,7 @@ function hasOrAdd(item, shouldAdd, set) {
       }
 
     case 'undefined':
-      if (set._items[type]) {
+      if (set._items[type]) { // 使用布尔值来表示是否有undefined
         return true;
       } else {
         if (shouldAdd) {
@@ -4816,3 +4816,331 @@ function hasOrAdd(item, shouldAdd, set) {
 
 export default _Set;
 ```
+
+## uniqWith
+
+```js
+/**
+ * const strEq = R.eqBy(String);
+ * R.uniqWith(strEq)([1, '1', 2, 1]); //=> [1, 2]
+ */
+var uniqWith =
+/*#__PURE__*/
+_curry2(function uniqWith(pred, list) {
+  var idx = 0;
+  var len = list.length;
+  var result = [];
+  var item;
+
+  while (idx < len) { // 遍历list
+    item = list[idx];
+
+    if (!_includesWith(pred, item, result)) {
+      result[result.length] = item; // 如果结果数组中不包含当前值，则放入该数组中
+    }
+
+    idx += 1;
+  }
+
+  return result;
+});
+```
+
+返回无重复元素的列表。元素通过 predicate 进行相同性判断。如果通过 predicate 判断两元素相同，保留第一个元素。
+
+这里使用内部函数_includesWith进行判断。
+
+```js
+export default function _includesWith(pred, x, list) {
+  var idx = 0;
+  var len = list.length;
+
+  while (idx < len) {
+    if (pred(x, list[idx])) { // 如果list中包含，则直接返回true
+      return true;
+    }
+
+    idx += 1;
+  }
+
+  return false; // 遍历完都没有返回，意味着不包含，直接返回false
+}
+```
+
+## unless
+
+```js
+var unless =
+/*#__PURE__*/
+_curry3(function unless(pred, whenFalseFn, x) {
+  return pred(x) ? x : whenFalseFn(x);
+});
+```
+
+判断输入值是否满足 predicate，若不符合，则将输入值传给 whenFalseFn 处理，并将处理结果作为返回；若符合，则将输入值原样返回。
+
+注意这里传入参数的顺序，predicate是第一个参数，whenFalseFn是第二个参数。只有不符合条件时，才会执行whenFalseFn。
+
+## until
+
+```js
+var until =
+/*#__PURE__*/
+_curry3(function until(pred, fn, init) {
+  var val = init;
+
+  while (!pred(val)) {
+    val = fn(val);
+  }
+
+  return val;
+});
+```
+
+通俗点说，就是不断地判断pred的返回结果，只要该结果不为true，就持续将val使用fn进行处理，每处理一次就更新val为最新的值。直到pred的返回结果为true，则停止处理。返回最终的val。这也是until名称的含义所在。
+
+## values
+
+```js
+/**
+ * R.values({a: 1, b: 2, c: 3}); //=> [1, 2, 3]
+ */
+var values =
+/*#__PURE__*/
+_curry1(function values(obj) {
+  var props = keys(obj);
+  var len = props.length;
+  var vals = [];
+  var idx = 0;
+
+  while (idx < len) {
+    vals[idx] = obj[props[idx]];
+    idx += 1;
+  }
+
+  return vals;
+});
+```
+
+返回对象所有自身可枚举的属性的值。注意：不同 JS 运行环境输出数组的顺序可能不一致。
+
+通过keys函数获取由键组成的数组，然后依次将键所对应的值放入结果数组中并返回。也就是说最终的顺序取决于keys函数返回的顺序。
+
+## valuesIn
+
+```js
+var valuesIn =
+/*#__PURE__*/
+_curry1(function valuesIn(obj) {
+  var prop;
+  var vs = [];
+
+  for (prop in obj) {
+    vs[vs.length] = obj[prop];
+  }
+
+  return vs;
+});
+```
+
+返回对象所有属性的值，包括原型链上的属性。注意：不同 JS 运行环境输出数组的顺序可能不一致。
+
+这里使用for...in获取所有属性。
+
+## when
+
+```js
+var when =
+/*#__PURE__*/
+_curry3(function when(pred, whenTrueFn, x) {
+  return pred(x) ? whenTrueFn(x) : x;
+});
+```
+
+判断输入值是否满足 predicate，若符合，则将输入值传给 whenTrueFn 处理，并将处理结果作为返回；若不符合，则将输入值原样返回。
+
+看得出来，这个与until的作用恰好相反。
+
+## where
+
+```js
+/**
+     const pred = R.where({
+       a: R.equals('foo'),
+       b: R.complement(R.equals('bar')),
+       x: R.gt(R.__, 10),
+       y: R.lt(R.__, 20)
+     });
+
+     pred({a: 'foo', b: 'xxx', x: 11, y: 19}); //=> true
+     pred({a: 'xxx', b: 'xxx', x: 11, y: 19}); //=> false
+     pred({a: 'foo', b: 'bar', x: 11, y: 19}); //=> false
+     pred({a: 'foo', b: 'xxx', x: 10, y: 19}); //=> false
+     pred({a: 'foo', b: 'xxx', x: 11, y: 20}); //=> false
+ */
+var where =
+/*#__PURE__*/
+_curry2(function where(spec, testObj) {
+  for (var prop in spec) {
+    if (_has(prop, spec) && !spec[prop](testObj[prop])) { // 待检测对象里的同名属性如果不通过测试规范对象属性，则提前返回false
+      return false;
+    }
+  }
+
+  return true; // 都测试通过，则返回true
+});
+```
+
+接受一个测试规范对象和一个待检测对象，如果测试满足规范，则返回 true，否则返回 false。测试规范对象的每个属性值都必须是 predicate 。每个 predicate 作用于待检测对象对应的属性值，如果所有 predicate 都返回 true，则 where 返回 true，否则返回 false 。
+
+where 非常适合于需要声明式表示约束的函数，比如 filter 和 find 。
+
+## whereEq
+
+```js
+/**
+ * const pred = R.whereEq({a: 1, b: 2}); 
+ * 
+ *  pred({a: 1});              //=> false
+ *  pred({a: 1, b: 2, c: 3});  //=> true
+ */
+var whereEq =
+/*#__PURE__*/
+_curry2(function whereEq(spec, testObj) {
+  return where(map(equals, spec), testObj);
+});
+```
+
+接受一个测试规范对象和一个待检测对象，如果测试满足规范，则返回 true，否则返回 false。
+
+## xor
+
+```js
+/**
+ * R.xor(true, true); //=> false
+ * R.xor(true, false); //=> true
+ * R.xor(false, true); //=> true
+ * R.xor(false, false); //=> false
+ */
+var xor =
+/*#__PURE__*/
+_curry2(function xor(a, b) {
+  return Boolean(!a ^ !b); // 通过布尔值进行异或，返回0或者1，然后显示转换为布尔值
+});
+```
+
+异或操作。
+
+如果其中一个参数为真，另一个参数为假，则返回true ；否则返回false。
+
+## xprod
+
+```js
+/**
+ * R.xprod([1, 2], ['a', 'b']); //=> [[1, 'a'], [1, 'b'], [2, 'a'], [2, 'b']]
+ */
+var xprod =
+/*#__PURE__*/
+_curry2(function xprod(a, b) {
+  var idx = 0;
+  var ilen = a.length;
+  var j;
+  var jlen = b.length;
+  var result = [];
+
+  while (idx < ilen) { // 外部循环用来处理参数一
+    j = 0; // 每次重新循环到内层时，重置内部的索引指针
+
+    while (j < jlen) { // 内部循环用来处理参数二
+      result[result.length] = [a[idx], b[j]]; // 将元素对放入结果数组末尾，如果数据量较大，这里将a[idx]进行缓存是不是更快一点？
+      j += 1;
+    }
+
+    idx += 1;
+  }
+
+  return result;
+});
+```
+
+将两个列表的元素两两组合，生成一个新的元素对列表。
+
+## zip
+
+```js
+/**
+ * R.zip([1, 2, 3], ['a', 'b', 'c']); //=> [[1, 'a'], [2, 'b'], [3, 'c']]
+ */
+var zip =
+/*#__PURE__*/
+_curry2(function zip(a, b) {
+  var rv = [];
+  var idx = 0;
+  var len = Math.min(a.length, b.length); // 获取较短的数组长度
+
+  while (idx < len) {
+    rv[idx] = [a[idx], b[idx]]; // 取出两个列表中对应索引位置的值，组成元素对列表，放入结果列表中
+    idx += 1;
+  }
+
+  return rv;
+});
+```
+
+将两个列表对应位置的元素组合，生成一个新的元素对列表。生成的列表长度取决于较短的输入列表的长度。
+
+## zipObj
+
+```js
+/**
+ * R.zipObj(['a', 'b', 'c'], [1, 2, 3]); //=> {a: 1, b: 2, c: 3}
+ */
+var zipObj =
+/*#__PURE__*/
+_curry2(function zipObj(keys, values) {
+  var idx = 0;
+  var len = Math.min(keys.length, values.length); // 获取较短的数组长度
+  var out = {};
+
+  while (idx < len) {
+    out[keys[idx]] = values[idx]; // 将两个列表对应索引的值组成键值对，放入结果对象中
+    idx += 1;
+  }
+
+  return out;
+});
+```
+
+将两个列表对应位置的元素作为键值对组合，生成一个新的键值对的列表。生成的列表长度取决于较短的输入列表的长度。
+
+## zipWith
+
+```js
+/**
+ const f = (x, y) => {
+   // ...
+  };
+  R.zipWith(f, [1, 2, 3], ['a', 'b', 'c']);
+  //=> [f(1, 'a'), f(2, 'b'), f(3, 'c')]
+ */
+var zipWith =
+/*#__PURE__*/
+_curry3(function zipWith(fn, a, b) {
+  var rv = [];
+  var idx = 0;
+  var len = Math.min(a.length, b.length);
+
+  while (idx < len) {
+    rv[idx] = fn(a[idx], b[idx]);
+    idx += 1;
+  }
+
+  return rv;
+});
+```
+
+将两个列表对应位置的元素通过一个函数处理，生成一个新的元素的列表。生成的列表长度取决于较短的输入列表的长度。
+
+## 总结
+
+历经半年时间，终于将ramda的函数库看完了，从中学习到了很多数据处理的方式，需要更多的实践才能掌握函数库的精髓。加油吧。
